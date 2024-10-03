@@ -1,0 +1,51 @@
+body {
+    background-color: #f0f8ff;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+}
+
+.container {
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+    color: #ff69b4;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+#story-container {
+    background-color: #fffaf0;
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+#story-image {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+#story-text {
+    font-size: 18px;
+    line-height: 1.6;
+}
+
+.btn-primary {
+    background-color: #1e90ff;
+    border-color: #1e90ff;
+}
+
+.btn-success {
+    background-color: #32cd32;
+    border-color: #32cd32;
+}
+
+.btn-info {
+    background-color: #ff69b4;
+    border-color: #ff69b4;
+    color: white;
+}
