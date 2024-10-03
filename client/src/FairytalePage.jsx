@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Tree } from 'lucide-react'
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf } from 'lucide-react'
 
 export default function FairytalePage() {
   const [name, setName] = useState('')
@@ -11,11 +11,15 @@ export default function FairytalePage() {
   const [theme, setTheme] = useState('')
   const [bookType, setBookType] = useState('pictured')
 
+  useEffect(() => {
+    console.log('FairytalePage component mounted')
+  }, [])
+
   const themes = [
     { value: 'princess', label: 'Princess Adventure', icon: Crown },
     { value: 'space', label: 'Space Exploration', icon: Rocket },
     { value: 'underwater', label: 'Underwater Journey', icon: Waves },
-    { value: 'forest', label: 'Enchanted Forest', icon: Tree },
+    { value: 'forest', label: 'Enchanted Forest', icon: Leaf },
   ]
 
   const bookTypes = [
@@ -25,16 +29,17 @@ export default function FairytalePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log('Submitted:', { name, age, theme, bookType })
+    console.log('Form submitted:', { name, age, theme, bookType })
   }
+
+  console.log('Rendering FairytalePage')
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        <Card className="shadow-xl">
+        <Card className="shadow-xl bg-white">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-purple-800">Fairytale Generator</CardTitle>
+            <CardTitle className="text-2xl font-bold text-center text-purple-800">Magical Fairytale Generator</CardTitle>
             <CardDescription className="text-center text-purple-600">Create your personalized fairytale adventure</CardDescription>
           </CardHeader>
           <CardContent>
@@ -47,6 +52,7 @@ export default function FairytalePage() {
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
                   required
+                  className="border-2 border-purple-300 focus:border-purple-500"
                 />
               </div>
               <div className="space-y-2">
@@ -60,6 +66,7 @@ export default function FairytalePage() {
                   required
                   min="1"
                   max="12"
+                  className="border-2 border-purple-300 focus:border-purple-500"
                 />
               </div>
               <div className="space-y-2">
