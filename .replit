@@ -19,6 +19,10 @@ args = "Start Fairytale Generator Server"
 task = "workflow.run"
 args = "React Dev Server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Test Story and Image Generation"
+
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
 author = "agent"
@@ -42,6 +46,17 @@ agentRequireRestartOnSave = false
 task = "shell.exec"
 args = "cd client && npm run dev -- --host 0.0.0.0"
 waitForPort = 5173
+
+[[workflows.workflow]]
+name = "Test Story and Image Generation"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node -e \"const { generateStory } = require('./services/storyGenerator'); const { generateImage } = require('./services/imageGenerator'); async function test() { const story = await generateStory('Alice', 7, 'dragons'); console.log('Story:', story); const imageUrl = await generateImage(story.title); console.log('Image URL:', imageUrl); } test();\""
 
 [deployment]
 run = ["sh", "-c", "node server.js"]
