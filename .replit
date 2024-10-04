@@ -23,6 +23,10 @@ args = "React Dev Server"
 task = "workflow.run"
 args = "Test Story and Image Generation"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Test Story Generation"
+
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
 author = "agent"
@@ -57,6 +61,17 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node -e \"const { generateStory } = require('./services/storyGenerator'); const { generateImage } = require('./services/imageGenerator'); async function test() { const story = await generateStory('Alice', 7, 'dragons'); console.log('Story:', story); const imageUrl = await generateImage(story.title); console.log('Image URL:', imageUrl); } test();\""
+
+[[workflows.workflow]]
+name = "Test Story Generation"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node -e \"const { generateStory } = require('./services/storyGenerator'); async function test() { try { const story = await generateStory('Alice', 7, 'dragons'); console.log('Story:', story); } catch (error) { console.error('Error:', error); } } test();\""
 
 [deployment]
 run = ["sh", "-c", "node server.js"]

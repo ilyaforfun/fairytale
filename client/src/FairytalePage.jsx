@@ -10,6 +10,9 @@ export default function FairytalePage() {
   const [age, setAge] = useState('')
   const [theme, setTheme] = useState('')
   const [bookType, setBookType] = useState('pictured')
+  const [loading, setLoading] = useState(false)
+  const [story, setStory] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     console.log('FairytalePage component mounted')
@@ -27,9 +30,33 @@ export default function FairytalePage() {
     { value: 'coloring', label: 'Coloring Book' },
   ]
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Form submitted:', { name, age, theme, bookType })
+    setLoading(true)
+    setError(null)
+    setStory(null)
+
+    try {
+      const response = await fetch('/api/generate-story', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ childName: name, childAge: age, childInterests: theme, bookType }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to generate story')
+      }
+
+      const data = await response.json()
+      setStory(data)
+    } catch (error) {
+      console.error('Error generating story:', error)
+      setError('An error occurred while generating the story. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   console.log('Rendering FairytalePage')
@@ -122,11 +149,23 @@ export default function FairytalePage() {
                   })}
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                Generate Fairytale
+              <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700 text-white" disabled={loading}>
+                {loading ? 'Generating...' : 'Generate Fairytale'}
                 <Wand2 className="ml-2 h-5 w-5" />
               </Button>
             </form>
+            {error && (
+              <div className="mt-4 text-red-600 text-center">{error}</div>
+            )}
+            {story && (
+              <div className="mt-6">
+                <h3 className="text-xl font-semibold text-purple-800">{story.title}</h3>
+                <p className="mt-2 text-gray-700">{story.content}</p>
+                {story.imageUrl && (
+                  <img src={story.imageUrl} alt="Story Illustration" className="mt-4 rounded-lg shadow-md" />
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 

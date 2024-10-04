@@ -5,14 +5,19 @@ const imageGenerator = require('../services/imageGenerator');
 
 router.post('/generate-story', async (req, res) => {
     try {
-        const { childName, childAge, childInterests } = req.body;
+        const { childName, childAge, childInterests, bookType } = req.body;
+
+        console.log('Received request:', { childName, childAge, childInterests, bookType });
 
         const story = await storyGenerator.generateStory(childName, childAge, childInterests);
         const imageUrl = await imageGenerator.generateImage(story.title);
 
+        console.log('Generated story:', story);
+        console.log('Generated image URL:', imageUrl);
+
         res.json({
             title: story.title,
-            story: story.content,
+            content: story.content,
             imageUrl: imageUrl
         });
     } catch (error) {
