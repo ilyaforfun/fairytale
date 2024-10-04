@@ -5,16 +5,16 @@ const anthropic = new Anthropic({
 });
 
 async function generateStory(childName, childAge, childInterests) {
-  const prompt = `\n\nHuman: Create a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The story should be no more than 500 words, have a clear moral lesson, and be suitable for children. Include a title for the story.\n\nAssistant: Certainly! I'd be happy to create a fairytale for ${childName}. Here's a story tailored to their interests:`;
+  const prompt = `Create a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The story should be no more than 500 words, have a clear moral lesson, and be suitable for children. Include a title for the story.`;
 
   try {
-    const response = await anthropic.completions.create({
-      model: 'claude-2',
-      prompt: prompt,
-      max_tokens_to_sample: 1000,
+    const response = await anthropic.messages.create({
+      model: 'claude-3-opus-20240229',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
     });
 
-    const storyContent = response.completion;
+    const storyContent = response.content[0].text;
     const [title, ...contentArray] = storyContent.split('\n\n');
 
     return {
