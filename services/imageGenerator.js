@@ -4,8 +4,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-async function generateImage(storyTitle) {
-  const prompt = `Create a colorful, child-friendly illustration for a fairytale titled "${storyTitle}". The image should be suitable for children and reflect the magical nature of the story.`;
+async function generateImage(storyTitle, isColoringBook = false) {
+  const basePrompt = `Create a child-friendly illustration for a fairytale titled "${storyTitle}". The image should be suitable for children and reflect the magical nature of the story.`;
+  const coloringBookPrompt = `${basePrompt} Make it a black and white line drawing suitable for coloring.`;
+  
+  const prompt = isColoringBook ? coloringBookPrompt : basePrompt;
 
   try {
     const response = await openai.images.generate({

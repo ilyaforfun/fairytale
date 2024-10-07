@@ -9,8 +9,8 @@ router.post('/generate-story', async (req, res) => {
 
         console.log('Received request:', { childName, childAge, childInterests, bookType });
 
-        const story = await storyGenerator.generateStory(childName, childAge, childInterests);
-        const imageUrl = await imageGenerator.generateImage(story.title);
+        const story = await storyGenerator.generateStory(childName, childAge, childInterests, bookType);
+        const imageUrl = await imageGenerator.generateImage(story.title, bookType === 'coloring');
 
         console.log('Generated story:', story);
         console.log('Generated image URL:', imageUrl);
