@@ -19,6 +19,7 @@ CHOICE A: [First option]
 CHOICE B: [Second option]`;
   
   try {
+    console.log("Initializing story with prompt:", prompt);
     const response = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
@@ -33,6 +34,7 @@ CHOICE B: [Second option]`;
     storyContext = mainContent;
     currentStage = 1;
     
+    console.log("Story initialized successfully");
     return {
       title: title.replace("Title: ", "").trim(),
       content: mainContent,
@@ -44,7 +46,11 @@ CHOICE B: [Second option]`;
     };
   } catch (error) {
     console.error("Error initializing story:", error);
-    throw error;
+    if (error.response) {
+      console.error("API response status:", error.response.status);
+      console.error("API response data:", error.response.data);
+    }
+    throw new Error(`Failed to initialize story: ${error.message}`);
   }
 }
 
@@ -60,12 +66,13 @@ async function continueStory(choice) {
 
   Continue the story based on this choice. Remember to maintain the tone and style of a fairytale for children. 
 
-  ${currentStage < 4 ? `After this part, provide two new distinct options for what ${childName} could do next. Format these options as:
+  ${currentStage < 4 ? `After this part, provide two new distinct options for what the child could do next. Format these options as:
   CHOICE A: [First option]
   CHOICE B: [Second option]` : "This is the final (fifth) stage of the story. Provide a satisfying conclusion."}
   `;
 
   try {
+    console.log("Continuing story with prompt:", prompt);
     const response = await anthropic.messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
@@ -80,6 +87,7 @@ async function continueStory(choice) {
     storyContext += `\n\n${choice}\n\n${mainContent}`;
     currentStage++;
 
+    console.log("Story continued successfully");
     return {
       content: mainContent,
       choices: choices ? {
@@ -90,7 +98,11 @@ async function continueStory(choice) {
     };
   } catch (error) {
     console.error("Error continuing story:", error);
-    throw error;
+    if (error.response) {
+      console.error("API response status:", error.response.status);
+      console.error("API response data:", error.response.data);
+    }
+    throw new Error(`Failed to continue story: ${error.message}`);
   }
 }
 

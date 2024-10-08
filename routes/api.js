@@ -19,11 +19,12 @@ router.post('/initialize-story', async (req, res) => {
             title: story.title,
             content: story.content,
             imageUrl: imageUrl,
-            stage: story.stage
+            stage: story.stage,
+            choices: story.choices
         });
     } catch (error) {
         console.error('Error initializing story:', error);
-        res.status(500).json({ error: 'Failed to initialize story' });
+        res.status(500).json({ error: 'Failed to initialize story', details: error.message });
     }
 });
 
@@ -46,11 +47,12 @@ router.post('/continue-story', async (req, res) => {
         res.json({
             content: story.content,
             imageUrl: imageUrl,
-            stage: currentStage
+            stage: currentStage,
+            choices: story.choices
         });
     } catch (error) {
         console.error('Error continuing story:', error);
-        res.status(500).json({ error: 'Failed to continue story' });
+        res.status(500).json({ error: 'Failed to continue story', details: error.message });
     }
 });
 

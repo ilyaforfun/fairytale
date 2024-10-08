@@ -49,7 +49,8 @@ export default function FairytalePage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to generate story')
+        const errorData = await response.json()
+        throw new Error(errorData.details || 'Failed to generate story')
       }
 
       const data = await response.json()
@@ -63,7 +64,7 @@ export default function FairytalePage() {
       fetchPrompts()
     } catch (error) {
       console.error('Error generating story:', error)
-      setError('An error occurred while generating the story. Please try again.')
+      setError(error.message || 'An error occurred while generating the story. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -83,7 +84,8 @@ export default function FairytalePage() {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to continue story')
+        const errorData = await response.json()
+        throw new Error(errorData.details || 'Failed to continue story')
       }
 
       const data = await response.json()
@@ -97,7 +99,7 @@ export default function FairytalePage() {
       fetchPrompts()
     } catch (error) {
       console.error('Error continuing story:', error)
-      setError('An error occurred while continuing the story. Please try again.')
+      setError(error.message || 'An error occurred while continuing the story. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -216,7 +218,10 @@ export default function FairytalePage() {
               </form>
             )}
             {error && (
-              <div className="mt-4 text-red-600 text-center">{error}</div>
+              <div className="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+                <p className="font-bold">Error:</p>
+                <p>{error}</p>
+              </div>
             )}
             {story && (
               <div className="mt-6">
