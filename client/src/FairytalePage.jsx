@@ -53,7 +53,12 @@ export default function FairytalePage() {
       }
 
       const data = await response.json()
-      setStory(data)
+      setStory({
+        title: data.title,
+        content: data.content,
+        imageUrl: data.imageUrl,
+        choices: data.choices,
+      })
       setCurrentStage(data.stage)
       fetchPrompts()
     } catch (error) {
