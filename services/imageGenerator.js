@@ -6,8 +6,8 @@ const openai = new OpenAI({
 
 let lastPrompt = '';
 
-async function generateImage(storyTitle, isColoringBook = false) {
-  const basePrompt = `Create a child-friendly illustration for a fairytale titled "${storyTitle}". The image should be suitable for children and reflect the magical nature of the story.`;
+async function generateImage(storyContext, isColoringBook = false) {
+  const basePrompt = `Create a child-friendly illustration for a fairytale scene. The current context of the story is: "${storyContext}". The image should be suitable for children and reflect the magical nature of the story.`;
   const coloringBookPrompt = `${basePrompt} Make it a black and white line drawing suitable for coloring.`;
   
   lastPrompt = isColoringBook ? coloringBookPrompt : basePrompt;
