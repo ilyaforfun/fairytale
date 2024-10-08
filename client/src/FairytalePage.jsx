@@ -13,6 +13,8 @@ export default function FairytalePage() {
   const [loading, setLoading] = useState(false)
   const [story, setStory] = useState(null)
   const [error, setError] = useState(null)
+  const [showPrompts, setShowPrompts] = useState(false)
+  const [prompts, setPrompts] = useState({ storyPrompt: '', imagePrompt: '' })
 
   useEffect(() => {
     console.log('FairytalePage component mounted')
@@ -51,12 +53,30 @@ export default function FairytalePage() {
 
       const data = await response.json()
       setStory(data)
+      fetchPrompts()
     } catch (error) {
       console.error('Error generating story:', error)
       setError('An error occurred while generating the story. Please try again.')
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchPrompts = async () => {
+    try {
+      const response = await fetch('/api/prompts')
+      if (!response.ok) {
+        throw new Error('Failed to fetch prompts')
+      }
+      const data = await response.json()
+      setPrompts(data)
+    } catch (error) {
+      console.error('Error fetching prompts:', error)
+    }
+  }
+
+  const togglePrompts = () => {
+    setShowPrompts(!showPrompts)
   }
 
   console.log('Rendering FairytalePage')
@@ -164,6 +184,17 @@ export default function FairytalePage() {
                 {story.imageUrl && (
                   <img src={story.imageUrl} alt="Story Illustration" className="mt-4 rounded-lg shadow-md" />
                 )}
+                <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
+                  {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
+                </Button>
+              </div>
+            )}
+            {showPrompts && (
+              <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                <h4 className="font-semibold text-purple-800">Story Generation Prompt:</h4>
+                <p className="text-sm text-gray-700">{prompts.storyPrompt}</p>
+                <h4 className="font-semibold text-purple-800 mt-2">Image Generation Prompt:</h4>
+                <p className="text-sm text-gray-700">{prompts.imagePrompt}</p>
               </div>
             )}
           </CardContent>

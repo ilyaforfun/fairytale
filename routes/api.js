@@ -26,4 +26,14 @@ router.post('/generate-story', async (req, res) => {
     }
 });
 
+router.get('/prompts', (req, res) => {
+    const storyPrompt = storyGenerator.getLastPrompt();
+    const imagePrompt = imageGenerator.getLastPrompt();
+
+    res.json({
+        storyPrompt: storyPrompt,
+        imagePrompt: imagePrompt
+    });
+});
+
 module.exports = router;
