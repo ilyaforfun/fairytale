@@ -15,7 +15,6 @@ export default function FairytalePage() {
   const [error, setError] = useState(null)
   const [showPrompts, setShowPrompts] = useState(false)
   const [prompts, setPrompts] = useState({ storyPrompt: '', imagePrompt: '' })
-  const [choices, setChoices] = useState([])
   const [currentStage, setCurrentStage] = useState(0)
 
   useEffect(() => {
@@ -39,7 +38,6 @@ export default function FairytalePage() {
     setLoading(true)
     setError(null)
     setStory(null)
-    setChoices([])
 
     try {
       const response = await fetch('/api/initialize-story', {
@@ -57,7 +55,6 @@ export default function FairytalePage() {
       const data = await response.json()
       setStory(data)
       setCurrentStage(data.stage)
-      extractChoices(data.content)
       fetchPrompts()
     } catch (error) {
       console.error('Error generating story:', error)
@@ -89,9 +86,9 @@ export default function FairytalePage() {
         ...prevStory,
         content: prevStory.content + '\n\n' + data.content,
         imageUrl: data.imageUrl,
+        choices: data.choices,
       }))
       setCurrentStage(data.stage)
-      extractChoices(data.content)
       fetchPrompts()
     } catch (error) {
       console.error('Error continuing story:', error)
@@ -99,16 +96,6 @@ export default function FairytalePage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const extractChoices = (content) => {
-    const choiceRegex = /Option \d+: (.+)/g
-    const extractedChoices = []
-    let match
-    while ((match = choiceRegex.exec(content)) !== null) {
-      extractedChoices.push(match[1])
-    }
-    setChoices(extractedChoices)
   }
 
   const fetchPrompts = async () => {
@@ -233,21 +220,33 @@ export default function FairytalePage() {
                 {story.imageUrl && (
                   <img src={story.imageUrl} alt="Story Illustration" className="mt-4 rounded-lg shadow-md w-full" />
                 )}
-                {choices.length > 0 && (
+                <div className="mt-4 text-purple-800 font-semibold">
+                  Stage: {currentStage} / 5
+                </div>
+                {story.choices && currentStage < 5 && (
                   <div className="mt-4">
                     <h4 className="font-semibold text-purple-800">What happens next?</h4>
                     <div className="grid grid-cols-1 gap-2 mt-2">
-                      {choices.map((choice, index) => (
-                        <Button
-                          key={index}
-                          onClick={() => handleContinueStory(choice)}
-                          className="bg-purple-500 hover:bg-purple-600 text-white"
-                          disabled={loading}
-                        >
-                          {choice}
-                        </Button>
-                      ))}
+                      <Button
+                        onClick={() => handleContinueStory(story.choices.A)}
+                        className="bg-purple-500 hover:bg-purple-600 text-white"
+                        disabled={loading}
+                      >
+                        {story.choices.A}
+                      </Button>
+                      <Button
+                        onClick={() => handleContinueStory(story.choices.B)}
+                        className="bg-purple-500 hover:bg-purple-600 text-white"
+                        disabled={loading}
+                      >
+                        {story.choices.B}
+                      </Button>
                     </div>
+                  </div>
+                )}
+                {currentStage === 5 && (
+                  <div className="mt-4 text-green-600 font-semibold">
+                    Story Complete!
                   </div>
                 )}
                 <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
