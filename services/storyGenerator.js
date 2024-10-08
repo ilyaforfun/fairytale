@@ -26,20 +26,39 @@ CHOICE B: [Second option]`;
       messages: [{ role: 'user', content: lastPrompt }]
     });
 
+    console.log('Claude API response:', JSON.stringify(response, null, 2));
+
+    if (!response.content || !Array.isArray(response.content) || response.content.length === 0) {
+      throw new Error('Unexpected response format from Claude API');
+    }
+
     const storyContent = response.content[0].text;
-    const [title, ...contentArray] = storyContent.split('\n\n');
-    const mainContent = contentArray.slice(0, -1).join('\n\n').trim();
-    const choices = contentArray[contentArray.length - 1].split('\n');
+    if (!storyContent) {
+      throw new Error('Story content is empty');
+    }
+
+    const titleMatch = storyContent.match(/Title:\s*(.*)/);
+    const title = titleMatch ? titleMatch[1].trim() : 'Untitled Story';
+
+    const choicesMatch = storyContent.match(/CHOICE A:[\s\S]*CHOICE B:[\s\S]*/);
+    if (!choicesMatch) {
+      throw new Error('Choices are not in the expected format');
+    }
+
+    const choicesText = choicesMatch[0];
+    const choices = {
+      A: choicesText.match(/CHOICE A:\s*(.*?)(?=\n|$)/)[1].trim(),
+      B: choicesText.match(/CHOICE B:\s*(.*?)(?=\n|$)/)[1].trim()
+    };
+
+    const mainContent = storyContent.replace(/Title:.*/, '').replace(/CHOICE A:[\s\S]*/, '').trim();
 
     storyContext = mainContent;
 
     return {
-      title: title.replace('Title: ', '').trim(),
+      title: title,
       content: mainContent,
-      choices: {
-        A: choices[0].replace('CHOICE A: ', '').trim(),
-        B: choices[1].replace('CHOICE B: ', '').trim(),
-      }
+      choices: choices
     };
   } catch (error) {
     console.error('Error initializing story:', error);
@@ -65,6 +84,10 @@ Please continue and conclude the story based on this choice.`;
       max_tokens: 1000,
       messages: [{ role: 'user', content: lastPrompt }]
     });
+
+    if (!response.content || !Array.isArray(response.content) || response.content.length === 0) {
+      throw new Error('Unexpected response format from Claude API');
+    }
 
     const continuationContent = response.content[0].text.trim();
     storyContext += `\n\n${choice}\n\n${continuationContent}`;
