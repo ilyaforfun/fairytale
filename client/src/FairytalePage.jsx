@@ -52,6 +52,7 @@ export default function FairytalePage() {
       }
 
       const data = await response.json()
+      console.log('Received story data:', data)
       setStory({
         title: data.title,
         content: data.content,
@@ -88,6 +89,7 @@ export default function FairytalePage() {
       }
 
       const data = await response.json()
+      console.log('Received continuation data:', data)
       setStory(prevStory => ({
         ...prevStory,
         content: prevStory.content + '\n\n' + choice + '\n\n' + data.content,
@@ -107,6 +109,7 @@ export default function FairytalePage() {
 
   const generateImage = async (imagePrompt) => {
     try {
+      console.log('Generating image with prompt:', imagePrompt)
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: {
@@ -121,6 +124,7 @@ export default function FairytalePage() {
       }
 
       const data = await response.json()
+      console.log('Received image URL:', data.imageUrl)
       setImageUrl(data.imageUrl)
     } catch (error) {
       console.error('Error generating image:', error)

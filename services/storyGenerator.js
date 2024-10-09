@@ -69,6 +69,13 @@ IMAGE PROMPT: [Image description]`;
 
     storyContext = mainContent;
 
+    console.log("Extracted story data:", {
+      title,
+      content: mainContent,
+      choices,
+      imagePrompt,
+    });
+
     return {
       title: title,
       content: mainContent,
@@ -101,6 +108,8 @@ IMAGE PROMPT: [Image description]`;
       messages: [{ role: "user", content: lastPrompt }],
     });
 
+    console.log("Claude API response for continuation:", JSON.stringify(response, null, 2));
+
     if (
       !response.content ||
       !Array.isArray(response.content) ||
@@ -117,6 +126,11 @@ IMAGE PROMPT: [Image description]`;
     const storyConclusion = continuationContent.replace(/IMAGE PROMPT:[\s\S]*/, "").trim();
     
     storyContext += `\n\n${choice}\n\n${storyConclusion}`;
+
+    console.log("Extracted continuation data:", {
+      content: storyConclusion,
+      imagePrompt,
+    });
 
     return {
       content: storyConclusion,
