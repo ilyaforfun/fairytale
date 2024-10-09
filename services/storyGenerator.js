@@ -17,8 +17,7 @@ async function initializeStory(childName, childAge, childInterests, bookType) {
 CHOICE A: [First option]
 CHOICE B: [Second option]
 
-After the story and choices, provide a brief image prompt that captures the main idea of this part of the story. Format it as:
-IMAGE PROMPT: [Image description]`;
+Please provide a detailed image prompt that captures the essence of this part of the story. The image prompt should describe a scene that a child would enjoy seeing illustrated.`;
 
   console.log("Story initialization prompt:", lastPrompt);
 
@@ -59,7 +58,9 @@ IMAGE PROMPT: [Image description]`;
     };
 
     const imagePromptMatch = storyContent.match(/IMAGE PROMPT:\s*(.*?)(?=\n|$)/);
-    const imagePrompt = imagePromptMatch ? imagePromptMatch[1].trim() : "";
+    const imagePrompt = imagePromptMatch 
+      ? imagePromptMatch[1].trim() 
+      : `A fairytale scene featuring ${childName} in a ${childInterests}-themed setting`;
 
     const mainContent = storyContent
       .replace(/Title:.*/, "")
@@ -88,7 +89,7 @@ IMAGE PROMPT: [Image description]`;
   }
 }
 
-async function continueStory(choice) {
+async function continueStory(choice, childName) {
   lastPrompt = `Continue the fairytale based on the following context and the child's choice. The continuation should be no more than 250 words, complete the moral lesson, and provide a satisfying conclusion to the story.
 
 Story context:
@@ -96,8 +97,9 @@ ${storyContext}
 
 The child chose: ${choice}
 
-Please continue and conclude the story based on this choice. After the story conclusion, provide a brief image prompt that captures the main idea of this part of the story. Format it as:
-IMAGE PROMPT: [Image description]`;
+Please continue and conclude the story based on this choice.
+
+Please provide a detailed image prompt that captures the essence of this conclusion. The image prompt should describe a scene that summarizes the story's ending in a visually appealing way for children.`;
 
   console.log("Story continuation prompt:", lastPrompt);
 
@@ -121,7 +123,9 @@ IMAGE PROMPT: [Image description]`;
     const continuationContent = response.content[0].text.trim();
     
     const imagePromptMatch = continuationContent.match(/IMAGE PROMPT:\s*(.*?)(?=\n|$)/);
-    const imagePrompt = imagePromptMatch ? imagePromptMatch[1].trim() : "";
+    const imagePrompt = imagePromptMatch 
+      ? imagePromptMatch[1].trim() 
+      : `A fairytale scene showing the conclusion of ${childName}'s adventure`;
 
     const storyConclusion = continuationContent.replace(/IMAGE PROMPT:[\s\S]*/, "").trim();
     
