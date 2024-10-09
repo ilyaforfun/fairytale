@@ -23,7 +23,7 @@ After the story and choices, on a new line, provide a brief image prompt that ca
   
   try {
     const response = await anthropic.messages.create({
-      model: "claude-3-opus-20240229",
+      model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
       messages: [{ role: 'user', content: lastPrompt }]
     });
@@ -72,7 +72,9 @@ After the story and choices, on a new line, provide a brief image prompt that ca
     };
   } catch (error) {
     console.error('Error initializing story:', error);
-    throw error;
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    throw new Error(`Failed to initialize story: ${error.message}`);
   }
 }
 
@@ -92,7 +94,7 @@ After the story conclusion, on a new line, provide a brief image prompt that cap
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-3-opus-20240229",
+      model: "claude-3-5-sonnet-20240620",
       max_tokens: 1000,
       messages: [{ role: 'user', content: lastPrompt }]
     });
@@ -116,7 +118,9 @@ After the story conclusion, on a new line, provide a brief image prompt that cap
     };
   } catch (error) {
     console.error('Error continuing story:', error);
-    throw error;
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    throw new Error(`Failed to continue story: ${error.message}`);
   }
 }
 
