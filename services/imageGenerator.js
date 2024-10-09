@@ -9,7 +9,7 @@ let lastPrompt = '';
 async function generateImage(imagePrompt, isColoringBook = false) {
   const coloringBookPrompt = isColoringBook ? "Make it a black and white line drawing suitable for coloring." : "";
   
-  lastPrompt = `${imagePrompt} ${coloringBookPrompt}`;
+  lastPrompt = `${imagePrompt} ${coloringBookPrompt}`.trim();
 
   console.log('Image generation prompt:', lastPrompt);
 
