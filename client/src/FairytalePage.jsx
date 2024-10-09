@@ -56,11 +56,9 @@ export default function FairytalePage() {
         title: data.title,
         content: data.content,
         choices: data.choices,
-        imagePrompt: data.imagePrompt,
       })
       setCurrentStage(1)
       fetchPrompts()
-      generateImage(data.title, data.imagePrompt)
     } catch (error) {
       console.error('Error generating story:', error)
       setError(error.message || 'An error occurred while generating the story. Please try again.')
@@ -91,12 +89,11 @@ export default function FairytalePage() {
       setStory(prevStory => ({
         ...prevStory,
         content: prevStory.content + '\n\n' + choice + '\n\n' + data.content,
-        choices: null,
-        imagePrompt: data.imagePrompt,
+        choices: null, // No more choices after the second part
       }))
       setCurrentStage(2)
       fetchPrompts()
-      generateImage(story.title, data.imagePrompt)
+      generateImage()
     } catch (error) {
       console.error('Error continuing story:', error)
       setError(error.message || 'An error occurred while continuing the story. Please try again.')
@@ -105,14 +102,16 @@ export default function FairytalePage() {
     }
   }
 
-  const generateImage = async (storyTitle, imagePrompt) => {
+  const generateImage = async () => {
+    if (!story || !story.title) return
+
     try {
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ storyTitle, imagePrompt, isColoringBook: bookType === 'coloring' }),
+        body: JSON.stringify({ storyTitle: story.title, isColoringBook: bookType === 'coloring' }),
       })
 
       if (!response.ok) {
@@ -271,7 +270,7 @@ export default function FairytalePage() {
                     </div>
                   </div>
                 )}
-                {imageUrl && (
+                {currentStage === 2 && imageUrl && (
                   <div className="mt-4">
                     <h4 className="font-semibold text-purple-800">Story Illustration</h4>
                     <img src={imageUrl} alt="Story Illustration" className="mt-2 rounded-lg shadow-md" />

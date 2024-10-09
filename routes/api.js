@@ -16,8 +16,7 @@ router.post('/initialize-story', async (req, res) => {
         res.json({
             title: story.title,
             content: story.content,
-            choices: story.choices,
-            imagePrompt: story.imagePrompt
+            choices: story.choices
         });
     } catch (error) {
         console.error('Error initializing story:', error);
@@ -36,8 +35,7 @@ router.post('/continue-story', async (req, res) => {
         console.log('Generated story continuation:', continuation);
 
         res.json({
-            content: continuation.content,
-            imagePrompt: continuation.imagePrompt
+            content: continuation.content
         });
     } catch (error) {
         console.error('Error continuing story:', error);
@@ -47,11 +45,11 @@ router.post('/continue-story', async (req, res) => {
 
 router.post('/generate-image', async (req, res) => {
     try {
-        const { storyTitle, imagePrompt, isColoringBook } = req.body;
+        const { storyTitle, isColoringBook } = req.body;
 
-        console.log('Received image generation request:', { storyTitle, imagePrompt, isColoringBook });
+        console.log('Received image generation request:', { storyTitle, isColoringBook });
 
-        const imageUrl = await imageGenerator.generateImage(storyTitle, imagePrompt, isColoringBook);
+        const imageUrl = await imageGenerator.generateImage(storyTitle, isColoringBook);
 
         console.log('Generated image URL:', imageUrl);
 

@@ -1,11 +1,11 @@
 const Anthropic = require('@anthropic-ai/sdk');
+
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
 });
 
 let lastPrompt = '';
 let storyContext = '';
-let lastImagePrompt = '';
 
 async function initializeStory(childName, childAge, childInterests, bookType) {
   const isColoringBook = bookType === 'coloring';
@@ -15,15 +15,13 @@ async function initializeStory(childName, childAge, childInterests, bookType) {
   
   lastPrompt = `Create the beginning of a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The story should be no more than 250 words, start to set up a clear moral lesson, and be suitable for children. ${coloringBookPrompt} Include a title for the story. At the end, provide two distinct options for what ${childName} could do next. Format these options as:
 CHOICE A: [First option]
-CHOICE B: [Second option]
-
-After the story and choices, on a new line, provide a brief image prompt that captures the essence of this part of the story for illustration. Start this line with "IMAGE PROMPT:"`;
+CHOICE B: [Second option]`;
 
   console.log('Story initialization prompt:', lastPrompt);
-  
+
   try {
     const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20240620",
+      model: "claude-3-opus-20240229",
       max_tokens: 1000,
       messages: [{ role: 'user', content: lastPrompt }]
     });
@@ -53,28 +51,18 @@ After the story and choices, on a new line, provide a brief image prompt that ca
       B: choicesText.match(/CHOICE B:\s*(.*?)(?=\n|$)/)[1].trim()
     };
 
-    const imagePromptMatch = storyContent.match(/IMAGE PROMPT:\s*(.*)/);
-    lastImagePrompt = imagePromptMatch ? imagePromptMatch[1].trim() : '';
-
-    const mainContent = storyContent
-      .replace(/Title:.*/, '')
-      .replace(/CHOICE A:[\s\S]*/, '')
-      .replace(/IMAGE PROMPT:.*/, '')
-      .trim();
+    const mainContent = storyContent.replace(/Title:.*/, '').replace(/CHOICE A:[\s\S]*/, '').trim();
 
     storyContext = mainContent;
 
     return {
       title: title,
       content: mainContent,
-      choices: choices,
-      imagePrompt: lastImagePrompt
+      choices: choices
     };
   } catch (error) {
     console.error('Error initializing story:', error);
-    console.error('Error details:', error.message);
-    console.error('Error stack:', error.stack);
-    throw new Error(`Failed to initialize story: ${error.message}`);
+    throw error;
   }
 }
 
@@ -86,15 +74,13 @@ ${storyContext}
 
 The child chose: ${choice}
 
-Please continue and conclude the story based on this choice.
-
-After the story conclusion, on a new line, provide a brief image prompt that captures the essence of this part of the story for illustration. Start this line with "IMAGE PROMPT:"`;
+Please continue and conclude the story based on this choice.`;
 
   console.log('Story continuation prompt:', lastPrompt);
 
   try {
     const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20240620",
+      model: "claude-3-opus-20240229",
       max_tokens: 1000,
       messages: [{ role: 'user', content: lastPrompt }]
     });
@@ -104,23 +90,14 @@ After the story conclusion, on a new line, provide a brief image prompt that cap
     }
 
     const continuationContent = response.content[0].text.trim();
-
-    const imagePromptMatch = continuationContent.match(/IMAGE PROMPT:\s*(.*)/);
-    lastImagePrompt = imagePromptMatch ? imagePromptMatch[1].trim() : '';
-
-    const mainContent = continuationContent.replace(/IMAGE PROMPT:.*/, '').trim();
-
-    storyContext += `\n\n${choice}\n\n${mainContent}`;
+    storyContext += `\n\n${choice}\n\n${continuationContent}`;
 
     return {
-      content: mainContent,
-      imagePrompt: lastImagePrompt
+      content: continuationContent,
     };
   } catch (error) {
     console.error('Error continuing story:', error);
-    console.error('Error details:', error.message);
-    console.error('Error stack:', error.stack);
-    throw new Error(`Failed to continue story: ${error.message}`);
+    throw error;
   }
 }
 
@@ -132,8 +109,4 @@ function getFullStory() {
   return storyContext;
 }
 
-function getLastImagePrompt() {
-  return lastImagePrompt;
-}
-
-module.exports = { initializeStory, continueStory, getLastPrompt, getFullStory, getLastImagePrompt };
+module.exports = { initializeStory, continueStory, getLastPrompt, getFullStory };
