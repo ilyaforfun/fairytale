@@ -64,7 +64,7 @@ agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node -e \"const { generateStory } = require('./services/storyGenerator'); const { generateImage } = require('./services/imageGenerator'); async function test() { const story = await generateStory('Alice', 7, 'dragons'); console.log('Story:', story); const imageUrl = await generateImage(story.title); console.log('Image URL:', imageUrl); } test();\""
+args = "node test_story_generation.js"
 
 [[workflows.workflow]]
 name = "Test Story Generation"

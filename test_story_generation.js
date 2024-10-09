@@ -19,6 +19,10 @@ async function testStoryGeneration() {
         throw new Error('Image prompt is missing in the initial story');
       }
 
+      if (initialStory.content.includes(initialStory.imagePrompt)) {
+        throw new Error('Image prompt is not completely separated from the story content');
+      }
+
       const imageUrl = await generateImage(initialStory.imagePrompt, testCase.bookType === 'coloring');
       console.log('Initial image generated successfully:', imageUrl);
 
@@ -29,6 +33,10 @@ async function testStoryGeneration() {
 
       if (!continuedStory.imagePrompt) {
         throw new Error('Image prompt is missing in the continued story');
+      }
+
+      if (continuedStory.content.includes(continuedStory.imagePrompt)) {
+        throw new Error('Image prompt is not completely separated from the continued story content');
       }
 
       const continuationImageUrl = await generateImage(continuedStory.imagePrompt, testCase.bookType === 'coloring');
