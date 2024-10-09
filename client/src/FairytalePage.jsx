@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf } from 'lucide-react'
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Download } from 'lucide-react'
 
 export default function FairytalePage() {
   const [name, setName] = useState('')
@@ -17,6 +17,7 @@ export default function FairytalePage() {
   const [prompts, setPrompts] = useState({ storyPrompt: '', imagePrompt: '' })
   const [currentStage, setCurrentStage] = useState(0)
   const [imageUrl, setImageUrl] = useState(null)
+  const [pdfLoading, setPdfLoading] = useState(false)
 
   const themes = [
     { value: 'princess', label: 'Princess Adventure', icon: Crown },
@@ -148,6 +149,40 @@ export default function FairytalePage() {
   const togglePrompts = () => {
     setShowPrompts(!showPrompts)
   }
+
+  const handleSavePDF = async () => {
+    if (!story) return;
+
+    setPdfLoading(true);
+    try {
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ story, imageUrl }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const data = await response.json();
+      const pdfUrl = data.pdfUrl;
+
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `${story.title}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setError('Failed to generate PDF. Please try again.');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -286,9 +321,19 @@ export default function FairytalePage() {
                     Story Complete!
                   </div>
                 )}
-                <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
-                  {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
-                </Button>
+                <div className="mt-4 flex justify-between">
+                  <Button onClick={togglePrompts} className="bg-blue-500 hover:bg-blue-600 text-white">
+                    {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
+                  </Button>
+                  <Button
+                    onClick={handleSavePDF}
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                    disabled={pdfLoading || currentStage !== 2}
+                  >
+                    {pdfLoading ? 'Generating PDF...' : 'Save as PDF'}
+                    <Download className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
               </div>
             )}
             {showPrompts && (
