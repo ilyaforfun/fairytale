@@ -16,7 +16,8 @@ export default function FairytalePage() {
   const [showPrompts, setShowPrompts] = useState(false)
   const [prompts, setPrompts] = useState({ storyPrompt: '', imagePrompt: '' })
   const [currentStage, setCurrentStage] = useState(0)
-  const [imageUrl, setImageUrl] = useState(null)
+  const [imageUrl1, setImageUrl1] = useState(null)
+  const [imageUrl2, setImageUrl2] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
 
   const themes = [
@@ -36,7 +37,8 @@ export default function FairytalePage() {
     setLoading(true)
     setError(null)
     setStory(null)
-    setImageUrl(null)
+    setImageUrl1(null)
+    setImageUrl2(null)
 
     try {
       const response = await fetch('/api/initialize-story', {
@@ -62,7 +64,8 @@ export default function FairytalePage() {
       })
       setCurrentStage(1)
       fetchPrompts()
-      generateImage(data.imagePrompt)
+      const imageUrl = await generateImage(data.imagePrompt)
+      setImageUrl1(imageUrl)
     } catch (error) {
       console.error('Error generating story:', error)
       setError(error.message || 'An error occurred while generating the story. Please try again.')
@@ -99,7 +102,8 @@ export default function FairytalePage() {
       }))
       setCurrentStage(2)
       fetchPrompts()
-      generateImage(data.imagePrompt)
+      const imageUrl = await generateImage(data.imagePrompt)
+      setImageUrl2(imageUrl)
     } catch (error) {
       console.error('Error continuing story:', error)
       setError(error.message || 'An error occurred while continuing the story. Please try again.')
@@ -126,7 +130,7 @@ export default function FairytalePage() {
 
       const data = await response.json()
       console.log('Received image URL:', data.imageUrl)
-      setImageUrl(data.imageUrl)
+      return data.imageUrl
     } catch (error) {
       console.error('Error generating image:', error)
       setError(error.message || 'An error occurred while generating the image. Please try again.')
@@ -160,7 +164,7 @@ export default function FairytalePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ story, imageUrl }),
+        body: JSON.stringify({ story, imageUrl1, imageUrl2 }),
       });
 
       if (!response.ok) {
@@ -310,10 +314,16 @@ export default function FairytalePage() {
                     </div>
                   </div>
                 )}
-                {imageUrl && (
+                {imageUrl1 && (
                   <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800">Story Illustration</h4>
-                    <img src={imageUrl} alt="Story Illustration" className="mt-2 rounded-lg shadow-md" />
+                    <h4 className="font-semibold text-purple-800">Story Illustration 1</h4>
+                    <img src={imageUrl1} alt="Story Illustration 1" className="mt-2 rounded-lg shadow-md" />
+                  </div>
+                )}
+                {imageUrl2 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-purple-800">Story Illustration 2</h4>
+                    <img src={imageUrl2} alt="Story Illustration 2" className="mt-2 rounded-lg shadow-md" />
                   </div>
                 )}
                 {currentStage === 2 && (

@@ -76,11 +76,11 @@ router.get('/prompts', (req, res) => {
 
 router.post('/generate-pdf', async (req, res) => {
     try {
-        const { story, imageUrl } = req.body;
+        const { story, imageUrl1, imageUrl2 } = req.body;
 
-        console.log('Received PDF generation request:', { story: story.title, imageUrl });
+        console.log('Received PDF generation request:', { story: story.title, imageUrl1, imageUrl2 });
 
-        const pdfFilename = await pdfGenerator.generatePDF(story, imageUrl);
+        const pdfFilename = await pdfGenerator.generatePDF(story, imageUrl1, imageUrl2);
 
         console.log('Generated PDF:', pdfFilename);
 
