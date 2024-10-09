@@ -80,7 +80,7 @@ export default function FairytalePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ choice }),
+        body: JSON.stringify({ choice, childName: name }),
       })
 
       if (!response.ok) {

@@ -27,11 +27,11 @@ router.post('/initialize-story', async (req, res) => {
 
 router.post('/continue-story', async (req, res) => {
     try {
-        const { choice } = req.body;
+        const { choice, childName } = req.body;
 
-        console.log('Received continuation request:', { choice });
+        console.log('Received continuation request:', { choice, childName });
 
-        const continuation = await storyGenerator.continueStory(choice);
+        const continuation = await storyGenerator.continueStory(choice, childName);
 
         console.log('Generated story continuation:', continuation);
 
