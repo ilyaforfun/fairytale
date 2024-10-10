@@ -17,6 +17,7 @@ export default function FairytalePage() {
   const [prompts, setPrompts] = useState({ storyPrompt: '', imagePrompt: '' })
   const [currentStage, setCurrentStage] = useState(0)
   const [imageUrl, setImageUrl] = useState(null)
+  const [secondImageUrl, setSecondImageUrl] = useState(null)
 
   const themes = [
     { value: 'princess', label: 'Princess Adventure', icon: Crown },
@@ -36,6 +37,7 @@ export default function FairytalePage() {
     setError(null)
     setStory(null)
     setImageUrl(null)
+    setSecondImageUrl(null)
 
     console.log('Form submitted with:', { name, age, theme, bookType })
 
@@ -102,7 +104,7 @@ export default function FairytalePage() {
       }))
       setCurrentStage(2)
       fetchPrompts()
-      generateImage(data.imagePrompt)
+      generateImage(data.imagePrompt, true)
     } catch (error) {
       console.error('Error continuing story:', error)
       setError(error.message || 'An error occurred while continuing the story. Please try again.')
@@ -111,7 +113,7 @@ export default function FairytalePage() {
     }
   }
 
-  const generateImage = async (imagePrompt) => {
+  const generateImage = async (imagePrompt, isSecondImage = false) => {
     try {
       console.log('Generating image with prompt:', imagePrompt)
       const response = await fetch('/api/generate-image', {
@@ -129,7 +131,11 @@ export default function FairytalePage() {
 
       const data = await response.json()
       console.log('Received image URL:', data.imageUrl)
-      setImageUrl(data.imageUrl)
+      if (isSecondImage) {
+        setSecondImageUrl(data.imageUrl)
+      } else {
+        setImageUrl(data.imageUrl)
+      }
     } catch (error) {
       console.error('Error generating image:', error)
       setError(error.message || 'An error occurred while generating the image. Please try again.')
@@ -153,9 +159,15 @@ export default function FairytalePage() {
     setShowPrompts(!showPrompts)
   }
 
+  const splitStoryContent = (content) => {
+    const words = content.split(' ')
+    const midpoint = Math.ceil(words.length / 2)
+    return [words.slice(0, midpoint).join(' '), words.slice(midpoint).join(' ')]
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <Card className="shadow-xl bg-white">
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center text-purple-800">Magical Fairytale Generator</CardTitle>
@@ -254,45 +266,53 @@ export default function FairytalePage() {
             {story && (
               <div className="mt-6">
                 <h3 className="text-2xl font-semibold text-purple-800 mb-4">{story.title}</h3>
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="md:w-1/2">
-                    <div className="prose prose-sm max-w-none">
-                      <p className="text-gray-700 whitespace-pre-wrap">{story.content}</p>
-                    </div>
-                    {story.choices && currentStage === 1 && (
-                      <div className="mt-4">
-                        <h4 className="font-semibold text-purple-800 mb-2">What happens next?</h4>
-                        <div className="grid grid-cols-1 gap-2">
-                          <Button
-                            onClick={() => handleContinueStory(story.choices.A)}
-                            className="bg-purple-500 hover:bg-purple-600 text-white"
-                            disabled={loading}
-                          >
-                            {story.choices.A}
-                          </Button>
-                          <Button
-                            onClick={() => handleContinueStory(story.choices.B)}
-                            className="bg-purple-500 hover:bg-purple-600 text-white"
-                            disabled={loading}
-                          >
-                            {story.choices.B}
-                          </Button>
+                {(() => {
+                  const [firstPart, secondPart] = splitStoryContent(story.content)
+                  return (
+                    <>
+                      <div className="prose prose-sm max-w-none mb-4">
+                        <p className="text-gray-700 whitespace-pre-wrap">{firstPart}</p>
+                      </div>
+                      {imageUrl && (
+                        <div className="mb-4">
+                          <img src={imageUrl} alt="First Story Illustration" className="w-full rounded-lg shadow-md" />
                         </div>
+                      )}
+                      <div className="prose prose-sm max-w-none mb-4">
+                        <p className="text-gray-700 whitespace-pre-wrap">{secondPart}</p>
                       </div>
-                    )}
-                  </div>
-                  <div className="md:w-1/2">
-                    {imageUrl && (
-                      <div className="mt-4 md:mt-0">
-                        <h4 className="font-semibold text-purple-800 mb-2">Story Illustration</h4>
-                        <img src={imageUrl} alt="Story Illustration" className="w-full rounded-lg shadow-md" />
-                      </div>
-                    )}
-                  </div>
-                </div>
+                      {secondImageUrl && (
+                        <div className="mb-4">
+                          <img src={secondImageUrl} alt="Second Story Illustration" className="w-full rounded-lg shadow-md" />
+                        </div>
+                      )}
+                    </>
+                  )
+                })()}
                 <div className="mt-4 text-purple-800 font-semibold">
                   Stage: {currentStage} / 2
                 </div>
+                {story.choices && currentStage === 1 && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-purple-800 mb-2">What happens next?</h4>
+                    <div className="grid grid-cols-1 gap-2">
+                      <Button
+                        onClick={() => handleContinueStory(story.choices.A)}
+                        className="bg-purple-500 hover:bg-purple-600 text-white"
+                        disabled={loading}
+                      >
+                        {story.choices.A}
+                      </Button>
+                      <Button
+                        onClick={() => handleContinueStory(story.choices.B)}
+                        className="bg-purple-500 hover:bg-purple-600 text-white"
+                        disabled={loading}
+                      >
+                        {story.choices.B}
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 {currentStage === 2 && (
                   <div className="mt-4 text-green-600 font-semibold text-center">
                     Story Complete!
