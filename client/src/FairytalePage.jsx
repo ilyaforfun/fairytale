@@ -159,7 +159,6 @@ export default function FairytalePage() {
 
     setPdfLoading(true);
     try {
-      console.log('Sending PDF generation request:', { story: story.title, imageUrl1, imageUrl2 });
       const response = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: {
@@ -169,12 +168,10 @@ export default function FairytalePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to generate PDF');
+        throw new Error('Failed to generate PDF');
       }
 
       const data = await response.json();
-      console.log('Received PDF generation response:', data);
       const pdfUrl = data.pdfUrl;
 
       const link = document.createElement('a');
@@ -185,7 +182,7 @@ export default function FairytalePage() {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Error generating PDF:', error);
-      setError(error.message || 'Failed to generate PDF. Please try again.');
+      setError('Failed to generate PDF. Please try again.');
     } finally {
       setPdfLoading(false);
     }
