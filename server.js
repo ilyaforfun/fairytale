@@ -1,7 +1,12 @@
-const express = require('express');
-const path = require('path');
-const cors = require('cors');
-const apiRoutes = require('./routes/api');
+import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import cors from 'cors';
+import fetch from 'node-fetch';
+import apiRoutes from './routes/api.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -13,6 +18,20 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
 app.use('/api', apiRoutes);
+
+// New route to proxy image requests
+app.get('/proxy-image', async (req, res) => {
+  try {
+    const imageUrl = req.query.url;
+    const response = await fetch(imageUrl);
+    const buffer = await response.buffer();
+    res.set('Content-Type', response.headers.get('content-type'));
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error proxying image:', error);
+    res.status(500).send('Error proxying image');
+  }
+});
 
 // For any other route, serve the index.html file
 app.get('*', (req, res) => {

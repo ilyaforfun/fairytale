@@ -1,4 +1,4 @@
-const Anthropic = require("@anthropic-ai/sdk");
+import { Anthropic } from "@anthropic-ai/sdk";
 
 const anthropic = new Anthropic({
   apiKey: process.env.CLAUDE_API_KEY,
@@ -163,7 +163,7 @@ function getFullStory() {
   return storyContext;
 }
 
-module.exports = {
+export {
   initializeStory,
   continueStory,
   getLastPrompt,

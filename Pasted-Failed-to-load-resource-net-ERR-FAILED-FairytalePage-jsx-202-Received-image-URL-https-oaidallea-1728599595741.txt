@@ -1,0 +1,15 @@
+Failed to load resource: net::ERR_FAILED
+FairytalePage.jsx:202 Received image URL: https://oaidalleapiprodscus.blob.core.windows.net/private/org-oZBDdnvzyC6WKG8Bu7P8m0iY/user-BHKXY1tnBCmBQR6tkdprVEJG/img-kSkkgi8KHbO02UoQkpAZnjBI.png?st=2024-10-10T21%3A30%3A41Z&se=2024-10-10T23%3A30%3A41Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=d505667d-d6c1-4a0a-bac7-5c84a87759f8&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-10-10T19%3A10%3A30Z&ske=2024-10-11T19%3A10%3A30Z&sks=b&skv=2024-08-04&sig=4AGX1UWB677eUysx/QF7YW83TZjmi5nifd0NnRzU6xo%3D
+@react-pdf_renderer.js?v=e0cd51c5:90927 Network request failed
+fetchImage @ @react-pdf_renderer.js?v=e0cd51c5:90927
+Show 1 more frame
+Show less
+8529ed8d-f2ce-4f72-8bce-bb3847f60d2e-00-fri8n22cakoo.sisko.replit.dev/:1 Access to XMLHttpRequest at 'https://oaidalleapiprodscus.blob.core.windows.net/private/org-oZBDdnvzyC6WKG8Bu7P8m0iY/user-BHKXY1tnBCmBQR6tkdprVEJG/img-kSkkgi8KHbO02UoQkpAZnjBI.png?st=2024-10-10T21%3A30%3A41Z&se=2024-10-10T23%3A30%3A41Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=d505667d-d6c1-4a0a-bac7-5c84a87759f8&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-10-10T19%3A10%3A30Z&ske=2024-10-11T19%3A10%3A30Z&sks=b&skv=2024-08-04&sig=4AGX1UWB677eUysx/QF7YW83TZjmi5nifd0NnRzU6xo%3D' from origin 'https://8529ed8d-f2ce-4f72-8bce-bb3847f60d2e-00-fri8n22cakoo.sisko.replit.dev:5173' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+3@react-pdf_renderer.js?v=e0cd51c5:90927 Network request failed
+fetchImage @ @react-pdf_renderer.js?v=e0cd51c5:90927
+Show 1 more frame
+Show less
+oaidalleapiprodscus.blob.core.windows.net/private/org-oZBDdnvzyC6WKG8Bu7P8m0iY/user-BHKXY1tnBCmBQR6tkdprVEJG/img-kSkkgi8KHbO02UoQkpAZnjBI.png?st=2024-10-10T21%3A30%3A41Z&se=2024-10-10T23%3A30%3A41Z&sp=r&sv=2024-08-04&sr=b&rscd=inline&rsct=image/png&skoid=d505667d-d6c1-4a0a-bac7-5c84a87759f8&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2024-10-10T19%3A10%3A30Z&ske=2024-10-11T19%3A10%3A30Z&sks=b&skv=2024-08-04&sig=4AGX1UWB677eUysx/QF7YW83TZjmi5nifd0NnRzU6xo%3D:1 
+        
+        
+       Failed to load resource: net::ERR_FAILED

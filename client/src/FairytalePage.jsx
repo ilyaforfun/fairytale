@@ -51,13 +51,23 @@ const FairytalePDF = ({ story, imageUrl, secondImageUrl }) => {
         <View style={styles.section}>
           <Text style={styles.title}>{story.title}</Text>
           <Text style={styles.text}>{firstHalf}</Text>
-          {imageUrl && <Image src={imageUrl} style={styles.image} />}
+          {imageUrl && (
+            <Image
+              src={imageUrl}
+              style={styles.image}
+            />
+          )}
         </View>
       </Page>
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
           <Text style={styles.text}>{secondHalf}</Text>
-          {secondImageUrl && <Image src={secondImageUrl} style={styles.image} />}
+          {secondImageUrl && (
+            <Image
+              src={secondImageUrl}
+              style={styles.image}
+            />
+          )}
         </View>
       </Page>
     </Document>
@@ -174,33 +184,33 @@ export default function FairytalePage() {
 
   const generateImage = async (imagePrompt, isSecondImage = false) => {
     try {
-      console.log('Generating image with prompt:', imagePrompt)
+      console.log('Generating image with prompt:', imagePrompt);
       const response = await fetch('/api/generate-image', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ imagePrompt, isColoringBook: bookType === 'coloring' }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.details || 'Failed to generate image')
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to generate image');
       }
 
-      const data = await response.json()
-      console.log('Received image URL:', data.imageUrl)
-      const fullImageUrl = new URL(data.imageUrl, window.location.origin).href
+      const data = await response.json();
+      console.log('Received image URL:', data.imageUrl);
+      const proxyUrl = `/proxy-image?url=${encodeURIComponent(data.imageUrl)}`;
       if (isSecondImage) {
-        setSecondImageUrl(fullImageUrl)
+        setSecondImageUrl(proxyUrl);
       } else {
-        setImageUrl(fullImageUrl)
+        setImageUrl(proxyUrl);
       }
     } catch (error) {
-      console.error('Error generating image:', error)
-      setError(error.message || 'An error occurred while generating the image. Please try again.')
+      console.error('Error generating image:', error);
+      setError(error.message || 'An error occurred while generating the image. Please try again.');
     }
-  }
+  };
 
   const fetchPrompts = async () => {
     try {
