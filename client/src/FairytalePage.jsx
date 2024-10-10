@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Download } from 'lucide-react'
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf } from 'lucide-react'
 
 export default function FairytalePage() {
   const [name, setName] = useState('')
@@ -16,9 +16,7 @@ export default function FairytalePage() {
   const [showPrompts, setShowPrompts] = useState(false)
   const [prompts, setPrompts] = useState({ storyPrompt: '', imagePrompt: '' })
   const [currentStage, setCurrentStage] = useState(0)
-  const [imageUrl1, setImageUrl1] = useState(null)
-  const [imageUrl2, setImageUrl2] = useState(null)
-  const [pdfLoading, setPdfLoading] = useState(false)
+  const [imageUrl, setImageUrl] = useState(null)
 
   const themes = [
     { value: 'princess', label: 'Princess Adventure', icon: Crown },
@@ -37,8 +35,7 @@ export default function FairytalePage() {
     setLoading(true)
     setError(null)
     setStory(null)
-    setImageUrl1(null)
-    setImageUrl2(null)
+    setImageUrl(null)
 
     try {
       const response = await fetch('/api/initialize-story', {
@@ -64,8 +61,7 @@ export default function FairytalePage() {
       })
       setCurrentStage(1)
       fetchPrompts()
-      const imageUrl = await generateImage(data.imagePrompt)
-      setImageUrl1(imageUrl)
+      generateImage(data.imagePrompt)
     } catch (error) {
       console.error('Error generating story:', error)
       setError(error.message || 'An error occurred while generating the story. Please try again.')
@@ -102,8 +98,7 @@ export default function FairytalePage() {
       }))
       setCurrentStage(2)
       fetchPrompts()
-      const imageUrl = await generateImage(data.imagePrompt)
-      setImageUrl2(imageUrl)
+      generateImage(data.imagePrompt)
     } catch (error) {
       console.error('Error continuing story:', error)
       setError(error.message || 'An error occurred while continuing the story. Please try again.')
@@ -130,7 +125,7 @@ export default function FairytalePage() {
 
       const data = await response.json()
       console.log('Received image URL:', data.imageUrl)
-      return data.imageUrl
+      setImageUrl(data.imageUrl)
     } catch (error) {
       console.error('Error generating image:', error)
       setError(error.message || 'An error occurred while generating the image. Please try again.')
@@ -153,40 +148,6 @@ export default function FairytalePage() {
   const togglePrompts = () => {
     setShowPrompts(!showPrompts)
   }
-
-  const handleSavePDF = async () => {
-    if (!story) return;
-
-    setPdfLoading(true);
-    try {
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ story, imageUrl1, imageUrl2 }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate PDF');
-      }
-
-      const data = await response.json();
-      const pdfUrl = data.pdfUrl;
-
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = `${story.title}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      setError('Failed to generate PDF. Please try again.');
-    } finally {
-      setPdfLoading(false);
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -314,16 +275,10 @@ export default function FairytalePage() {
                     </div>
                   </div>
                 )}
-                {imageUrl1 && (
+                {imageUrl && (
                   <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800">Story Illustration 1</h4>
-                    <img src={imageUrl1} alt="Story Illustration 1" className="mt-2 rounded-lg shadow-md" />
-                  </div>
-                )}
-                {imageUrl2 && (
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800">Story Illustration 2</h4>
-                    <img src={imageUrl2} alt="Story Illustration 2" className="mt-2 rounded-lg shadow-md" />
+                    <h4 className="font-semibold text-purple-800">Story Illustration</h4>
+                    <img src={imageUrl} alt="Story Illustration" className="mt-2 rounded-lg shadow-md" />
                   </div>
                 )}
                 {currentStage === 2 && (
@@ -331,19 +286,9 @@ export default function FairytalePage() {
                     Story Complete!
                   </div>
                 )}
-                <div className="mt-4 flex justify-between">
-                  <Button onClick={togglePrompts} className="bg-blue-500 hover:bg-blue-600 text-white">
-                    {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
-                  </Button>
-                  <Button
-                    onClick={handleSavePDF}
-                    className="bg-green-500 hover:bg-green-600 text-white"
-                    disabled={pdfLoading || currentStage !== 2}
-                  >
-                    {pdfLoading ? 'Generating PDF...' : 'Save as PDF'}
-                    <Download className="ml-2 h-5 w-5" />
-                  </Button>
-                </div>
+                <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
+                  {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
+                </Button>
               </div>
             )}
             {showPrompts && (

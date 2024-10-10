@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const storyGenerator = require('../services/storyGenerator');
 const imageGenerator = require('../services/imageGenerator');
-const pdfGenerator = require('../services/pdfGenerator');
-const path = require('path');
 
 router.post('/initialize-story', async (req, res) => {
     try {
@@ -72,29 +70,6 @@ router.get('/prompts', (req, res) => {
         storyPrompt: storyPrompt,
         imagePrompt: imagePrompt
     });
-});
-
-router.post('/generate-pdf', async (req, res) => {
-    try {
-        const { story, imageUrl1, imageUrl2 } = req.body;
-
-        console.log('Received PDF generation request:', { story: story.title, imageUrl1, imageUrl2 });
-
-        const pdfFilename = await pdfGenerator.generatePDF(story, imageUrl1, imageUrl2);
-
-        console.log('Generated PDF:', pdfFilename);
-
-        res.json({ pdfUrl: `/pdfs/${pdfFilename}` });
-    } catch (error) {
-        console.error('Error generating PDF:', error);
-        res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
-    }
-});
-
-router.get('/pdfs/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const filePath = path.join(__dirname, '..', 'public', 'pdfs', filename);
-    res.sendFile(filePath);
 });
 
 module.exports = router;
