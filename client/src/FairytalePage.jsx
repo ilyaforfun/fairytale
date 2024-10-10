@@ -203,8 +203,10 @@ export default function FairytalePage() {
       const proxyUrl = `/proxy-image?url=${encodeURIComponent(data.imageUrl)}`;
       if (isSecondImage) {
         setSecondImageUrl(proxyUrl);
+        console.log('Set secondImageUrl:', proxyUrl);
       } else {
         setImageUrl(proxyUrl);
+        console.log('Set imageUrl:', proxyUrl);
       }
     } catch (error) {
       console.error('Error generating image:', error);
@@ -341,12 +343,28 @@ export default function FairytalePage() {
                     </div>
                     {index === 0 && imageUrl && (
                       <div className="mt-4">
-                        <img src={imageUrl} alt="First Story Illustration" className="w-full rounded-lg shadow-md" />
+                        <img 
+                          src={imageUrl} 
+                          alt="First Story Illustration" 
+                          className="w-full rounded-lg shadow-md" 
+                          onError={(e) => {
+                            console.error('Error loading image:', e);
+                            e.target.src = 'fallback-image-url.jpg';
+                          }}
+                        />
                       </div>
                     )}
                     {index === splitStoryContent(story.content).length - 1 && secondImageUrl && (
                       <div className="mt-4">
-                        <img src={secondImageUrl} alt="Second Story Illustration" className="w-full rounded-lg shadow-md" />
+                        <img 
+                          src={secondImageUrl} 
+                          alt="Second Story Illustration" 
+                          className="w-full rounded-lg shadow-md"
+                          onError={(e) => {
+                            console.error('Error loading image:', e);
+                            e.target.src = 'fallback-image-url.jpg';
+                          }}
+                        />
                       </div>
                     )}
                   </div>

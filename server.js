@@ -19,13 +19,18 @@ app.use(express.static(path.join(__dirname, 'client/dist')));
 
 app.use('/api', apiRoutes);
 
-// New route to proxy image requests
+// Proxy route to handle image requests
 app.get('/proxy-image', async (req, res) => {
   try {
     const imageUrl = req.query.url;
+    console.log('Proxying image request for URL:', imageUrl);
     const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch image: ${response.statusText}`);
+    }
     const buffer = await response.buffer();
     res.set('Content-Type', response.headers.get('content-type'));
+    res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
     res.send(buffer);
   } catch (error) {
     console.error('Error proxying image:', error);
