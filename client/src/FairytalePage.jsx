@@ -3,7 +3,40 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf } from 'lucide-react'
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Download } from 'lucide-react'
+import { Document, Page, Text, View, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer'
+
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'column',
+    backgroundColor: '#E4E4E4',
+    padding: 30,
+  },
+  section: {
+    margin: 10,
+    padding: 10,
+  },
+  title: {
+    fontSize: 24,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  text: {
+    fontSize: 12,
+    marginBottom: 10,
+  },
+});
+
+const FairytalePDF = ({ story }) => (
+  <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.section}>
+        <Text style={styles.title}>{story.title}</Text>
+        <Text style={styles.text}>{story.content}</Text>
+      </View>
+    </Page>
+  </Document>
+);
 
 export default function FairytalePage() {
   const [name, setName] = useState('')
@@ -308,6 +341,24 @@ export default function FairytalePage() {
                 {currentStage === 2 && (
                   <div className="mt-4 text-green-600 font-semibold text-center">
                     Story Complete!
+                  </div>
+                )}
+                {currentStage === 2 && (
+                  <div className="mt-4 flex justify-center">
+                    <PDFDownloadLink
+                      document={<FairytalePDF story={story} />}
+                      fileName={`${story.title.replace(/\s+/g, '_')}.pdf`}
+                    >
+                      {({ blob, url, loading, error }) => (
+                        <Button
+                          className="bg-green-500 hover:bg-green-600 text-white"
+                          disabled={loading}
+                        >
+                          {loading ? 'Generating PDF...' : 'Download PDF'}
+                          <Download className="ml-2 h-5 w-5" />
+                        </Button>
+                      )}
+                    </PDFDownloadLink>
                   </div>
                 )}
                 <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
