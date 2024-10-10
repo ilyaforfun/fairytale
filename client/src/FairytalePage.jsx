@@ -155,11 +155,11 @@ export default function FairytalePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <Card className="shadow-xl bg-white">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold text-center text-purple-800">Magical Fairytale Generator</CardTitle>
-            <CardDescription className="text-center text-purple-600">Create your personalized fairytale adventure</CardDescription>
+            <CardTitle className="text-3xl font-bold text-center text-purple-800">Magical Fairytale Generator</CardTitle>
+            <CardDescription className="text-center text-purple-600 text-lg">Create your personalized fairytale adventure</CardDescription>
           </CardHeader>
           <CardContent>
             {!story && (
@@ -253,54 +253,62 @@ export default function FairytalePage() {
             )}
             {story && (
               <div className="mt-6">
-                <h3 className="text-xl font-semibold text-purple-800">{story.title}</h3>
-                <p className="mt-2 text-gray-700 whitespace-pre-wrap">{story.content}</p>
+                <h3 className="text-2xl font-semibold text-purple-800 mb-4">{story.title}</h3>
+                <div className="flex flex-col md:flex-row gap-6">
+                  <div className="md:w-1/2">
+                    <div className="prose prose-sm max-w-none">
+                      <p className="text-gray-700 whitespace-pre-wrap">{story.content}</p>
+                    </div>
+                    {story.choices && currentStage === 1 && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-purple-800 mb-2">What happens next?</h4>
+                        <div className="grid grid-cols-1 gap-2">
+                          <Button
+                            onClick={() => handleContinueStory(story.choices.A)}
+                            className="bg-purple-500 hover:bg-purple-600 text-white"
+                            disabled={loading}
+                          >
+                            {story.choices.A}
+                          </Button>
+                          <Button
+                            onClick={() => handleContinueStory(story.choices.B)}
+                            className="bg-purple-500 hover:bg-purple-600 text-white"
+                            disabled={loading}
+                          >
+                            {story.choices.B}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="md:w-1/2">
+                    {imageUrl && (
+                      <div className="mt-4 md:mt-0">
+                        <h4 className="font-semibold text-purple-800 mb-2">Story Illustration</h4>
+                        <img src={imageUrl} alt="Story Illustration" className="w-full rounded-lg shadow-md" />
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <div className="mt-4 text-purple-800 font-semibold">
                   Stage: {currentStage} / 2
                 </div>
-                {story.choices && currentStage === 1 && (
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800">What happens next?</h4>
-                    <div className="grid grid-cols-1 gap-2 mt-2">
-                      <Button
-                        onClick={() => handleContinueStory(story.choices.A)}
-                        className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={loading}
-                      >
-                        {story.choices.A}
-                      </Button>
-                      <Button
-                        onClick={() => handleContinueStory(story.choices.B)}
-                        className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={loading}
-                      >
-                        {story.choices.B}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {imageUrl && (
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800">Story Illustration</h4>
-                    <img src={imageUrl} alt="Story Illustration" className="mt-2 rounded-lg shadow-md" />
-                  </div>
-                )}
                 {currentStage === 2 && (
-                  <div className="mt-4 text-green-600 font-semibold">
+                  <div className="mt-4 text-green-600 font-semibold text-center">
                     Story Complete!
                   </div>
                 )}
                 <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
                   {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
                 </Button>
-              </div>
-            )}
-            {showPrompts && (
-              <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                <h4 className="font-semibold text-purple-800">Story Generation Prompt:</h4>
-                <p className="text-sm text-gray-700">{prompts.storyPrompt}</p>
-                <h4 className="font-semibold text-purple-800 mt-2">Image Generation Prompt:</h4>
-                <p className="text-sm text-gray-700">{prompts.imagePrompt}</p>
+                {showPrompts && (
+                  <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                    <h4 className="font-semibold text-purple-800">Story Generation Prompt:</h4>
+                    <p className="text-sm text-gray-700">{prompts.storyPrompt}</p>
+                    <h4 className="font-semibold text-purple-800 mt-2">Image Generation Prompt:</h4>
+                    <p className="text-sm text-gray-700">{prompts.imagePrompt}</p>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
