@@ -31,6 +31,18 @@ args = "Test Story Generation"
 task = "workflow.run"
 args = "Test Image Generation"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "PDF Generation Check"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "PDF Generation Test"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "PDF Verification"
+
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
 author = "agent"
@@ -87,6 +99,39 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node -e \"const { generateImage } = require('./services/imageGenerator'); async function test() { try { const imageUrl = await generateImage('Alice and the Friendly Dragon'); console.log('Image URL:', imageUrl); } catch (error) { console.error('Error:', error); } } test();\""
+
+[[workflows.workflow]]
+name = "PDF Generation Check"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "ls -l public/pdfs/the_magic_of_friendship.pdf && pdfinfo public/pdfs/the_magic_of_friendship.pdf"
+
+[[workflows.workflow]]
+name = "PDF Generation Test"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node test_pdf_generation.js"
+
+[[workflows.workflow]]
+name = "PDF Verification"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "ls -l public/pdfs/the_magic_of_friendship.pdf && file public/pdfs/the_magic_of_friendship.pdf && head -c 1000 public/pdfs/the_magic_of_friendship.pdf | xxd"
 
 [deployment]
 run = ["sh", "-c", "node server.js"]

@@ -87,7 +87,8 @@ router.post('/generate-pdf', async (req, res) => {
         res.json({ pdfUrl: `/pdfs/${pdfFilename}` });
     } catch (error) {
         console.error('Error generating PDF:', error);
-        res.status(500).json({ error: 'Failed to generate PDF', details: error.message });
+        const errorMessage = error.message || 'An unexpected error occurred during PDF generation';
+        res.status(500).json({ error: 'Failed to generate PDF', details: errorMessage });
     }
 });
 
