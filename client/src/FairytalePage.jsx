@@ -37,6 +37,8 @@ export default function FairytalePage() {
     setStory(null)
     setImageUrl(null)
 
+    console.log('Form submitted with:', { name, age, theme, bookType })
+
     try {
       const response = await fetch('/api/initialize-story', {
         method: 'POST',
@@ -45,6 +47,8 @@ export default function FairytalePage() {
         },
         body: JSON.stringify({ childName: name, childAge: age, childInterests: theme, bookType }),
       })
+
+      console.log('Response status:', response.status)
 
       if (!response.ok) {
         const errorData = await response.json()
