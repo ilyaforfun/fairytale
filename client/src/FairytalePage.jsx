@@ -3,66 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Download } from 'lucide-react'
-import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from '@react-pdf/renderer'
-
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'column',
-    backgroundColor: '#FFFFFF',
-    padding: 30,
-  },
-  section: {
-    margin: 10,
-    padding: 10,
-  },
-  title: {
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  text: {
-    fontSize: 12,
-    marginBottom: 10,
-  },
-  image: {
-    maxWidth: '100%',
-    maxHeight: '300px',
-    objectFit: 'contain',
-    marginVertical: 15,
-  },
-});
-
-const FairytalePDF = ({ story, imageUrl, secondImageUrl }) => {
-  const splitContent = (content) => {
-    const paragraphs = content.split('\n\n');
-    const midpoint = Math.ceil(paragraphs.length / 2);
-    return [
-      paragraphs.slice(0, midpoint).join('\n\n'),
-      paragraphs.slice(midpoint).join('\n\n')
-    ];
-  };
-
-  const [firstHalf, secondHalf] = splitContent(story.content);
-
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.title}>{story.title}</Text>
-          <Text style={styles.text}>{firstHalf}</Text>
-          {imageUrl && <Image src={imageUrl} style={styles.image} />}
-        </View>
-      </Page>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <Text style={styles.text}>{secondHalf}</Text>
-          {secondImageUrl && <Image src={secondImageUrl} style={styles.image} />}
-        </View>
-      </Page>
-    </Document>
-  );
-};
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf } from 'lucide-react'
 
 export default function FairytalePage() {
   const [name, setName] = useState('')
@@ -367,24 +308,6 @@ export default function FairytalePage() {
                 {currentStage === 2 && (
                   <div className="mt-4 text-green-600 font-semibold text-center">
                     Story Complete!
-                  </div>
-                )}
-                {currentStage === 2 && (
-                  <div className="mt-4 flex justify-center">
-                    <PDFDownloadLink
-                      document={<FairytalePDF story={story} imageUrl={imageUrl} secondImageUrl={secondImageUrl} />}
-                      fileName={`${story.title.replace(/\s+/g, '_')}.pdf`}
-                    >
-                      {({ blob, url, loading, error }) => (
-                        <Button
-                          className="bg-green-500 hover:bg-green-600 text-white"
-                          disabled={loading}
-                        >
-                          {loading ? 'Generating PDF...' : 'Download PDF'}
-                          <Download className="ml-2 h-5 w-5" />
-                        </Button>
-                      )}
-                    </PDFDownloadLink>
                   </div>
                 )}
                 <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
