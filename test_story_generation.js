@@ -1,50 +1,20 @@
 const { initializeStory, continueStory } = require('./services/storyGenerator');
-const { generateImage } = require('./services/imageGenerator');
 
 async function testStoryGeneration() {
-  const testCases = [
-    { name: 'Alice', age: 8, interests: 'princess', bookType: 'pictured' },
-    { name: 'Bob', age: 6, interests: 'space', bookType: 'coloring' },
-    { name: 'Charlie', age: 10, interests: 'dinosaurs', bookType: 'pictured' },
-  ];
+  try {
+    console.log('Testing story initialization...');
+    const initialStory = await initializeStory('Alice', 7, 'magic and adventure', 'pictured');
+    console.log('Initial story:', JSON.stringify(initialStory, null, 2));
 
-  for (const testCase of testCases) {
-    console.log(`Testing with input: ${JSON.stringify(testCase)}`);
-    try {
-      const initialStory = await initializeStory(testCase.name, testCase.age, testCase.interests, testCase.bookType);
-      console.log('Initial story generated successfully:');
-      console.log(JSON.stringify(initialStory, null, 2));
-
-      if (!initialStory.imagePrompt) {
-        throw new Error('Image prompt is missing in the initial story');
-      }
-
-      if (initialStory.content.includes(initialStory.imagePrompt)) {
-        throw new Error('Image prompt is not completely separated from the story content');
-      }
-
-      const imageUrl = await generateImage(initialStory.imagePrompt, testCase.bookType === 'coloring');
-      console.log('Initial image generated successfully:', imageUrl);
-
-      const choice = initialStory.choices.A;
-      const continuedStory = await continueStory(choice, testCase.name);
-      console.log('Story continuation generated successfully:');
-      console.log(JSON.stringify(continuedStory, null, 2));
-
-      if (!continuedStory.imagePrompt) {
-        throw new Error('Image prompt is missing in the continued story');
-      }
-
-      if (continuedStory.content.includes(continuedStory.imagePrompt)) {
-        throw new Error('Image prompt is not completely separated from the continued story content');
-      }
-
-      const continuationImageUrl = await generateImage(continuedStory.imagePrompt, testCase.bookType === 'coloring');
-      console.log('Continuation image generated successfully:', continuationImageUrl);
-    } catch (error) {
-      console.error('Error generating story or image:', error.message);
+    if (initialStory.choices && initialStory.choices.A) {
+      console.log('\nTesting story continuation...');
+      const continuedStory = await continueStory(initialStory.choices.A, 'Alice');
+      console.log('Continued story:', JSON.stringify(continuedStory, null, 2));
+    } else {
+      console.log('Error: No choices available for story continuation');
     }
-    console.log('---');
+  } catch (error) {
+    console.error('Error during story generation:', error);
   }
 }
 

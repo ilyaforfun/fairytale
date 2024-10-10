@@ -50,3 +50,25 @@
 2024-10-10T00:04:13.897Z: Story content length: 1345 characters
 2024-10-10T00:04:13.897Z: Image URL 1: https://picsum.photos/seed/picsum/800/600
 2024-10-10T00:04:13.897Z: Image URL 2: https://picsum.photos/seed/friendship/800/600
+2024-10-10T00:11:39.404Z: Starting PDF generation test...
+2024-10-10T00:11:39.406Z: Generating PDF...
+2024-10-10T00:11:39.406Z: Story title: The Magic of Friendship
+2024-10-10T00:11:39.406Z: Story content length: 1345 characters
+2024-10-10T00:11:39.406Z: Image URL 1: https://picsum.photos/seed/picsum/800/600
+2024-10-10T00:11:39.406Z: Image URL 2: https://picsum.photos/seed/friendship/800/600
+2024-10-10T00:11:40.664Z: PDF generated successfully: the_magic_of_friendship.pdf
+2024-10-10T00:11:40.664Z: Generation time: 1258ms
+2024-10-10T00:11:40.665Z: PDF file size: 48756 bytes
+2024-10-10T00:11:40.665Z: PDF file size is greater than 0 bytes, indicating content was written successfully.
+2024-10-10T00:11:40.665Z: PDF generation test completed successfully.
+2024-10-10T00:13:57.710Z: Starting PDF generation test...
+2024-10-10T00:13:57.712Z: Generating PDF...
+2024-10-10T00:13:57.712Z: Story title: The Magic of Friendship
+2024-10-10T00:13:57.712Z: Story content length: 1345 characters
+2024-10-10T00:13:57.712Z: Image URL 1: https://picsum.photos/seed/picsum/800/600
+2024-10-10T00:13:57.712Z: Image URL 2: https://picsum.photos/seed/friendship/800/600
+2024-10-10T00:13:58.913Z: PDF generated successfully: the_magic_of_friendship.pdf
+2024-10-10T00:13:58.913Z: Generation time: 1201ms
+2024-10-10T00:13:58.914Z: PDF file size: 48756 bytes
+2024-10-10T00:13:58.914Z: PDF file size is greater than 0 bytes, indicating content was written successfully.
+2024-10-10T00:13:58.914Z: PDF generation test completed successfully.
