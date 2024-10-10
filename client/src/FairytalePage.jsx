@@ -190,11 +190,10 @@ export default function FairytalePage() {
 
       const data = await response.json()
       console.log('Received image URL:', data.imageUrl)
-      const fullImageUrl = new URL(data.imageUrl, window.location.origin).href
       if (isSecondImage) {
-        setSecondImageUrl(fullImageUrl)
+        setSecondImageUrl(data.imageUrl)
       } else {
-        setImageUrl(fullImageUrl)
+        setImageUrl(data.imageUrl)
       }
     } catch (error) {
       console.error('Error generating image:', error)
