@@ -9,7 +9,7 @@ import { Document, Page, Text, View, StyleSheet, PDFDownloadLink, Image } from '
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
-    backgroundColor: '#E4E4E4',
+    backgroundColor: '#FFFFFF',
     padding: 30,
   },
   section: {
@@ -27,15 +27,20 @@ const styles = StyleSheet.create({
   },
   image: {
     maxWidth: '100%',
+    maxHeight: '300px',
+    objectFit: 'contain',
     marginVertical: 15,
   },
 });
 
 const FairytalePDF = ({ story, imageUrl, secondImageUrl }) => {
   const splitContent = (content) => {
-    const words = content.split(' ');
-    const midpoint = Math.floor(words.length / 2);
-    return [words.slice(0, midpoint).join(' '), words.slice(midpoint).join(' ')];
+    const paragraphs = content.split('\n\n');
+    const midpoint = Math.ceil(paragraphs.length / 2);
+    return [
+      paragraphs.slice(0, midpoint).join('\n\n'),
+      paragraphs.slice(midpoint).join('\n\n')
+    ];
   };
 
   const [firstHalf, secondHalf] = splitContent(story.content);
@@ -46,13 +51,13 @@ const FairytalePDF = ({ story, imageUrl, secondImageUrl }) => {
         <View style={styles.section}>
           <Text style={styles.title}>{story.title}</Text>
           <Text style={styles.text}>{firstHalf}</Text>
-          {imageUrl && <Image style={styles.image} src={imageUrl} />}
+          {imageUrl && <Image src={imageUrl} style={styles.image} />}
         </View>
       </Page>
       <Page size="A4" style={styles.page}>
         <View style={styles.section}>
           <Text style={styles.text}>{secondHalf}</Text>
-          {secondImageUrl && <Image style={styles.image} src={secondImageUrl} />}
+          {secondImageUrl && <Image src={secondImageUrl} style={styles.image} />}
         </View>
       </Page>
     </Document>
