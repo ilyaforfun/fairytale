@@ -1,10 +1,12 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
 const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+app.use(cors());
 app.use(express.json());
 
 // Serve static files from the React app build directory
