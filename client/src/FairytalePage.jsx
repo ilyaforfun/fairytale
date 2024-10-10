@@ -349,7 +349,7 @@ export default function FairytalePage() {
                           className="w-full rounded-lg shadow-md" 
                           onError={(e) => {
                             console.error('Error loading image:', e);
-                            e.target.src = 'fallback-image-url.jpg';
+                            e.target.src = '/fallback-image.jpg';
                           }}
                         />
                       </div>
@@ -362,7 +362,7 @@ export default function FairytalePage() {
                           className="w-full rounded-lg shadow-md"
                           onError={(e) => {
                             console.error('Error loading image:', e);
-                            e.target.src = 'fallback-image-url.jpg';
+                            e.target.src = '/fallback-image.jpg';
                           }}
                         />
                       </div>
