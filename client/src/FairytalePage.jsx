@@ -163,6 +163,20 @@ export default function FairytalePage() {
     return content.split('\n\n').filter(paragraph => paragraph.trim() !== '');
   }
 
+  const resetStory = () => {
+    setName('')
+    setAge('')
+    setTheme('')
+    setBookType('pictured')
+    setStory(null)
+    setError(null)
+    setShowPrompts(false)
+    setPrompts({ storyPrompt: '', imagePrompt: '' })
+    setCurrentStage(0)
+    setImageUrl(null)
+    setSecondImageUrl(null)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
@@ -306,8 +320,13 @@ export default function FairytalePage() {
                   </div>
                 )}
                 {currentStage === 2 && (
-                  <div className="mt-4 text-green-600 font-semibold text-center">
-                    Story Complete!
+                  <div className="mt-4 text-center">
+                    <div className="text-green-600 font-semibold mb-4">
+                      Story Complete!
+                    </div>
+                    <Button onClick={resetStory} className="bg-purple-500 hover:bg-purple-600 text-white">
+                      Create New Story
+                    </Button>
                   </div>
                 )}
                 <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
