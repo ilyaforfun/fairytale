@@ -160,9 +160,7 @@ export default function FairytalePage() {
   }
 
   const splitStoryContent = (content) => {
-    const words = content.split(' ')
-    const midpoint = Math.ceil(words.length / 2)
-    return [words.slice(0, midpoint).join(' '), words.slice(midpoint).join(' ')]
+    return content.split('\n\n').filter(paragraph => paragraph.trim() !== '');
   }
 
   return (
@@ -266,29 +264,23 @@ export default function FairytalePage() {
             {story && (
               <div className="mt-6">
                 <h3 className="text-2xl font-semibold text-purple-800 mb-4">{story.title}</h3>
-                {(() => {
-                  const [firstPart, secondPart] = splitStoryContent(story.content)
-                  return (
-                    <>
-                      <div className="prose prose-sm max-w-none mb-4">
-                        <p className="text-gray-700 whitespace-pre-wrap">{firstPart}</p>
+                {splitStoryContent(story.content).map((paragraph, index) => (
+                  <div key={index} className="mb-4">
+                    <div className="prose prose-sm max-w-none">
+                      <p className="text-gray-700 whitespace-pre-wrap">{paragraph}</p>
+                    </div>
+                    {index === 0 && imageUrl && (
+                      <div className="mt-4">
+                        <img src={imageUrl} alt="First Story Illustration" className="w-full rounded-lg shadow-md" />
                       </div>
-                      {imageUrl && (
-                        <div className="mb-4">
-                          <img src={imageUrl} alt="First Story Illustration" className="w-full rounded-lg shadow-md" />
-                        </div>
-                      )}
-                      <div className="prose prose-sm max-w-none mb-4">
-                        <p className="text-gray-700 whitespace-pre-wrap">{secondPart}</p>
+                    )}
+                    {index === splitStoryContent(story.content).length - 1 && secondImageUrl && (
+                      <div className="mt-4">
+                        <img src={secondImageUrl} alt="Second Story Illustration" className="w-full rounded-lg shadow-md" />
                       </div>
-                      {secondImageUrl && (
-                        <div className="mb-4">
-                          <img src={secondImageUrl} alt="Second Story Illustration" className="w-full rounded-lg shadow-md" />
-                        </div>
-                      )}
-                    </>
-                  )
-                })()}
+                    )}
+                  </div>
+                ))}
                 <div className="mt-4 text-purple-800 font-semibold">
                   Stage: {currentStage} / 2
                 </div>
