@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+const OpenAI = require("openai");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -34,4 +34,4 @@ function getLastPrompt() {
   return lastPrompt;
 }
 
-export { generateImage, getLastPrompt };
+module.exports = { generateImage, getLastPrompt };

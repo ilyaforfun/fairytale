@@ -1,12 +1,7 @@
-import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import cors from 'cors';
-import fetch from 'node-fetch';
-import apiRoutes from './routes/api.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const express = require('express');
+const path = require('path');
+const cors = require('cors');
+const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -18,25 +13,6 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
 app.use('/api', apiRoutes);
-
-// Proxy route to handle image requests
-app.get('/proxy-image', async (req, res) => {
-  try {
-    const imageUrl = req.query.url;
-    console.log('Proxying image request for URL:', imageUrl);
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch image: ${response.statusText}`);
-    }
-    const buffer = await response.buffer();
-    res.set('Content-Type', response.headers.get('content-type'));
-    res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
-    res.send(buffer);
-  } catch (error) {
-    console.error('Error proxying image:', error);
-    res.status(500).send('Error proxying image');
-  }
-});
 
 // For any other route, serve the index.html file
 app.get('*', (req, res) => {

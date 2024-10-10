@@ -1,8 +1,7 @@
-import express from 'express';
-import * as storyGenerator from '../services/storyGenerator.js';
-import * as imageGenerator from '../services/imageGenerator.js';
-
+const express = require('express');
 const router = express.Router();
+const storyGenerator = require('../services/storyGenerator');
+const imageGenerator = require('../services/imageGenerator');
 
 router.post('/initialize-story', async (req, res) => {
     try {
@@ -73,4 +72,4 @@ router.get('/prompts', (req, res) => {
     });
 });
 
-export default router;
+module.exports = router;
