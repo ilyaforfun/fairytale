@@ -7,11 +7,20 @@ const PORT = process.env.PORT || 8000;
 
 app.use(express.json());
 
+// Add this logging middleware
+app.use((req, res, next) => {
+  console.log(`Received request: ${req.method} ${req.url}`);
+  next();
+});
+
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Explicitly serve audio files
+app.use('/audio', express.static(path.join(__dirname, 'public/audio')));
 
 app.use('/api', apiRoutes);
 
