@@ -10,7 +10,7 @@ async function generateSpeech(text, outputFileName) {
   try {
     const audioDir = path.resolve("./public/audio");
     console.log("Audio directory:", audioDir);
-    
+
     // Create the audio directory if it doesn't exist
     await fs.mkdir(audioDir, { recursive: true });
 
@@ -19,13 +19,13 @@ async function generateSpeech(text, outputFileName) {
 
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "onyx",
+      voice: "nova",
       input: text,
     });
 
     const buffer = Buffer.from(await mp3.arrayBuffer());
     await fs.writeFile(speechFile, buffer);
-    
+
     // Verify file exists and is readable
     await fs.access(speechFile, fs.constants.R_OK);
     console.log(`Speech file verified: ${speechFile}`);

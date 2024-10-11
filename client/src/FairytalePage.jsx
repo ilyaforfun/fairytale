@@ -1,9 +1,25 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
+import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  BookOpen,
+  Wand2,
+  Palette,
+  Send,
+  Crown,
+  Rocket,
+  Waves,
+  Leaf,
+  Volume2,
+} from "lucide-react";
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -18,10 +34,15 @@ export default function FairytalePage() {
   const [currentStage, setCurrentStage] = useState(0);
   const [imageUrl, setImageUrl] = useState(null);
   const [secondImageUrl, setSecondImageUrl] = useState(null);
-  const [audioUrl, setAudioUrl] = useState(null);
-  const [isAudioLoading, setIsAudioLoading] = useState(false);
-  const [audioError, setAudioError] = useState(null);
-  const audioRef = useRef(null);
+  const [firstAudioUrl, setFirstAudioUrl] = useState(null);
+  const [secondAudioUrl, setSecondAudioUrl] = useState(null);
+  const [isFirstAudioLoading, setIsFirstAudioLoading] = useState(false);
+  const [isSecondAudioLoading, setIsSecondAudioLoading] = useState(false);
+  const [firstAudioError, setFirstAudioError] = useState(null);
+  const [secondAudioError, setSecondAudioError] = useState(null);
+  const firstAudioRef = useRef(null);
+  const secondAudioRef = useRef(null);
+  const [userChoice, setUserChoice] = useState(null);
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -91,6 +112,7 @@ export default function FairytalePage() {
   const handleContinueStory = async (choice) => {
     setLoading(true);
     setError(null);
+    setUserChoice(choice);
 
     try {
       const response = await fetch("/api/continue-story", {
@@ -196,47 +218,108 @@ export default function FairytalePage() {
     setCurrentStage(0);
     setImageUrl(null);
     setSecondImageUrl(null);
-    setAudioUrl(null);
+    setFirstAudioUrl(null);
+    setSecondAudioUrl(null);
   };
 
-  const handleGenerateSpeech = async () => {
+  const handleGenerateFirstSpeech = async () => {
     if (!story) return;
 
-    setIsAudioLoading(true);
-    setAudioError(null);
+    setIsFirstAudioLoading(true);
+    setFirstAudioError(null);
     try {
-      const response = await fetch('/api/generate-speech', {
-        method: 'POST',
+      const response = await fetch("/api/generate-speech", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          text: `${story.title}\n\n${story.content}`,
-          fileName: `${name.toLowerCase().replace(/\s+/g, '_')}_fairytale.mp3`,
+          text: `${story.title}\n\n${story.content}\n\nOption A: ${story.choices.A}\n\nOption B: ${story.choices.B}`,
+          fileName: `${name.toLowerCase().replace(/\s+/g, "_")}_fairytale_part1.mp3`,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate speech');
+        throw new Error("Failed to generate speech");
       }
 
       const data = await response.json();
-      setAudioUrl(data.audioUrl);
+      setFirstAudioUrl(data.audioUrl);
     } catch (error) {
-      console.error('Error generating speech:', error);
-      setAudioError("Failed to generate speech. Please try again.");
+      console.error("Error generating first speech:", error);
+      setFirstAudioError(
+        "Failed to generate speech for the first part. Please try again.",
+      );
     } finally {
-      setIsAudioLoading(false);
+      setIsFirstAudioLoading(false);
+    }
+  };
+
+  const handleGenerateSecondSpeech = async () => {
+    if (!story || currentStage !== 2 || !userChoice) return;
+
+    setIsSecondAudioLoading(true);
+    setSecondAudioError(null);
+    try {
+      // Split the content by double newlines
+      const contentParts = story.content.split("\n\n");
+
+      // Find the index of the user's choice
+      const choiceIndex = contentParts.findIndex(
+        (part) => part.trim() === userChoice.trim(),
+      );
+
+      if (choiceIndex === -1) {
+        throw new Error("Unable to find user choice in story content");
+      }
+
+      // Get all content after the choice
+      const secondPartContent = contentParts
+        .slice(choiceIndex + 1)
+        .join("\n\n");
+
+      const response = await fetch("/api/generate-speech", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          text: secondPartContent,
+          fileName: `${name.toLowerCase().replace(/\s+/g, "_")}_fairytale_part2.mp3`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate speech");
+      }
+
+      const data = await response.json();
+      setSecondAudioUrl(data.audioUrl);
+    } catch (error) {
+      console.error("Error generating second speech:", error);
+      setSecondAudioError(
+        "Failed to generate speech for the second part. Please try again.",
+      );
+    } finally {
+      setIsSecondAudioLoading(false);
     }
   };
 
   useEffect(() => {
-    if (audioUrl && audioRef.current) {
-      const audio = audioRef.current;
-      audio.src = audioUrl;
+    if (firstAudioUrl && firstAudioRef.current) {
+      const audio = firstAudioRef.current;
+      audio.src = firstAudioUrl;
       audio.load();
     }
-  }, [audioUrl]);
+  }, [firstAudioUrl]);
+
+  useEffect(() => {
+    if (secondAudioUrl && secondAudioRef.current) {
+      const audio = secondAudioRef.current;
+      audio.src = secondAudioUrl;
+      audio.load();
+    }
+  }, [secondAudioUrl]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -427,35 +510,77 @@ export default function FairytalePage() {
                   >
                     {showPrompts ? "Hide Prompts" : "Show Prompts"}
                   </Button>
-                  <Button
-                    onClick={handleGenerateSpeech}
-                    className="bg-green-500 hover:bg-green-600 text-white"
-                    disabled={isAudioLoading}
-                  >
-                    {isAudioLoading ? "Generating..." : "Generate Speech"}
-                    <Volume2 className="ml-2 h-5 w-5" />
-                  </Button>
+                  {currentStage === 1 && (
+                    <Button
+                      onClick={handleGenerateFirstSpeech}
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                      disabled={isFirstAudioLoading}
+                    >
+                      {isFirstAudioLoading
+                        ? "Generating..."
+                        : "Generate First Part Speech"}
+                      <Volume2 className="ml-2 h-5 w-5" />
+                    </Button>
+                  )}
+                  {currentStage === 2 && (
+                    <Button
+                      onClick={handleGenerateSecondSpeech}
+                      className="bg-green-500 hover:bg-green-600 text-white"
+                      disabled={isSecondAudioLoading}
+                    >
+                      {isSecondAudioLoading
+                        ? "Generating..."
+                        : "Generate Second Part Speech"}
+                      <Volume2 className="ml-2 h-5 w-5" />
+                    </Button>
+                  )}
                 </div>
-                {audioUrl && (
+                {firstAudioUrl && (
                   <div className="mt-4">
-                    <audio 
-                      ref={audioRef}
-                      controls 
-                      src={audioUrl}
+                    <h4 className="font-semibold text-purple-800 mb-2">
+                      First Part Audio:
+                    </h4>
+                    <audio
+                      ref={firstAudioRef}
+                      controls
+                      src={firstAudioUrl}
                       className="w-full"
                       onError={(e) => {
-                        console.error("Audio error:", e.target.error);
-                        setAudioError(`Error loading audio: ${e.target.error.message}`);
+                        console.error("First audio error:", e.target.error);
+                        setFirstAudioError(
+                          `Error loading first audio: ${e.target.error.message}`,
+                        );
                       }}
                     >
                       Your browser does not support the audio element.
                     </audio>
-                    {audioError && (
-                      <p className="text-red-500 mt-2">{audioError}</p>
+                    {firstAudioError && (
+                      <p className="text-red-500 mt-2">{firstAudioError}</p>
                     )}
-                    {isAudioLoading && <p>Loading audio...</p>}
-                    {/* Remove the following line */}
-                    {/* <p className="text-sm text-gray-500 mt-1">Audio URL: {audioUrl}</p> */}
+                  </div>
+                )}
+                {secondAudioUrl && (
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-purple-800 mb-2">
+                      Second Part Audio:
+                    </h4>
+                    <audio
+                      ref={secondAudioRef}
+                      controls
+                      src={secondAudioUrl}
+                      className="w-full"
+                      onError={(e) => {
+                        console.error("Second audio error:", e.target.error);
+                        setSecondAudioError(
+                          `Error loading second audio: ${e.target.error.message}`,
+                        );
+                      }}
+                    >
+                      Your browser does not support the audio element.
+                    </audio>
+                    {secondAudioError && (
+                      <p className="text-red-500 mt-2">{secondAudioError}</p>
+                    )}
                   </div>
                 )}
                 {showPrompts && (

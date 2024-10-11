@@ -90,6 +90,7 @@ args = "node -e \"const { generateImage } = require('./services/imageGenerator')
 
 [deployment]
 run = ["sh", "-c", "node server.js"]
+deploymentTarget = "cloudrun"
 
 [[ports]]
 localPort = 4173
