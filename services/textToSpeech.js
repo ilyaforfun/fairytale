@@ -1,6 +1,6 @@
-const OpenAI = require('openai');
-const fs = require('fs');
-const path = require('path');
+const OpenAI = require("openai");
+const fs = require("fs");
+const path = require("path");
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -12,7 +12,7 @@ async function generateSpeech(text, outputFileName) {
 
     const mp3 = await openai.audio.speech.create({
       model: "tts-1",
-      voice: "alloy",
+      voice: "onyx",
       input: text,
     });
 
@@ -21,7 +21,7 @@ async function generateSpeech(text, outputFileName) {
 
     return `/audio/${outputFileName}`;
   } catch (error) {
-    console.error('Error generating speech:', error);
+    console.error("Error generating speech:", error);
     throw error;
   }
 }
