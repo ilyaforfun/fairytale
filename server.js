@@ -15,8 +15,18 @@ app.use(express.static(path.join(__dirname, 'client/dist')));
 app.use('/audio', (req, res, next) => {
   const audioPath = path.join(__dirname, 'public/audio', req.url);
   console.log('Audio file requested:', req.url);
-  express.static(path.join(__dirname, 'public/audio'))(req, res, next);
-});
+  console.log('Full audio path:', audioPath);
+  
+  // Check if the file exists
+  fs.access(audioPath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.error('Audio file not found:', audioPath);
+      return res.status(404).send('Audio file not found');
+    }
+    console.log('Audio file exists:', audioPath);
+    next();
+  });
+}, express.static(path.join(__dirname, 'public/audio')));
 
 app.use('/api', apiRoutes);
 
