@@ -11,6 +11,7 @@ async function generateSpeech(text, outputFileName) {
     const audioDir = path.resolve("./public/audio");
     console.log("Audio directory:", audioDir);
     
+    // Create the audio directory if it doesn't exist
     await fs.mkdir(audioDir, { recursive: true });
 
     const speechFile = path.join(audioDir, outputFileName);
@@ -20,24 +21,22 @@ async function generateSpeech(text, outputFileName) {
       model: "tts-1",
       voice: "onyx",
       input: text,
-      response_format: "mp3"
     });
 
     const buffer = Buffer.from(await mp3.arrayBuffer());
     await fs.writeFile(speechFile, buffer);
     
-    console.log("File written successfully");
-
+    // Verify file exists and is readable
     await fs.access(speechFile, fs.constants.R_OK);
     console.log(`Speech file verified: ${speechFile}`);
 
+    // List contents of audio directory
     const files = await fs.readdir(audioDir);
     console.log("Files in audio directory:", files);
 
-    // Return the relative path, not starting with a slash
-    return `audio/${outputFileName}`;
+    return `/audio/${outputFileName}`;
   } catch (error) {
-    console.error("Error in generateSpeech:", error);
+    console.error("Error generating or verifying speech file:", error);
     throw new Error(`Failed to generate or verify speech: ${error.message}`);
   }
 }

@@ -77,7 +77,7 @@ router.post('/generate-speech', async (req, res) => {
     try {
         const { text, fileName } = req.body;
 
-        console.log('Received speech generation request:', { text: text.substring(0, 100) + '...', fileName });
+        console.log('Received speech generation request:', { text, fileName });
 
         const audioUrl = await textToSpeech.generateSpeech(text, fileName);
 
@@ -86,7 +86,7 @@ router.post('/generate-speech', async (req, res) => {
         res.json({ audioUrl });
     } catch (error) {
         console.error('Error generating speech:', error);
-        res.status(500).json({ error: 'Failed to generate speech', details: error.message, stack: error.stack });
+        res.status(500).json({ error: 'Failed to generate speech', details: error.message });
     }
 });
 

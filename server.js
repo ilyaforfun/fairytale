@@ -1,7 +1,6 @@
 const express = require('express');
 const path = require('path');
 const apiRoutes = require('./routes/api');
-const fs = require('fs'); // Added fs for reading directory
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -18,7 +17,7 @@ app.use((req, res, next) => {
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
 // Serve static files from the public directory
-app.use('/audio', express.static(path.join(__dirname, 'public', 'audio')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Explicitly serve audio files with logging
 app.use('/audio', (req, res, next) => {
@@ -28,8 +27,6 @@ app.use('/audio', (req, res, next) => {
     if (err) {
       console.error(`Error serving audio file: ${err.message}`);
       next(err);
-    } else {
-      console.log(`Successfully served audio file: ${audioPath}`);
     }
   });
 });
@@ -50,17 +47,6 @@ app.get('/test-audio', (req, res) => {
       res.status(404).send('Audio file not found');
     }
   });
-});
-
-// Route to check the contents of the audio directory
-app.get('/check-audio', async (req, res) => {
-  try {
-    const audioDir = path.join(__dirname, 'public', 'audio');
-    const files = await fs.readdir(audioDir);
-    res.json({ files });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
 app.listen(PORT, '0.0.0.0', () => {

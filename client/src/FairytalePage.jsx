@@ -24,7 +24,6 @@ export default function FairytalePage() {
   const [isSecondAudioLoading, setIsSecondAudioLoading] = useState(false);
   const [firstAudioError, setFirstAudioError] = useState(null);
   const [secondAudioError, setSecondAudioError] = useState(null);
-  const [userChoice, setUserChoice] = useState(null);
   const firstAudioRef = useRef(null);
   const secondAudioRef = useRef(null);
 
@@ -96,7 +95,6 @@ export default function FairytalePage() {
   const handleContinueStory = async (choice) => {
     setLoading(true);
     setError(null);
-    setUserChoice(choice); // Set the user's choice
 
     try {
       const response = await fetch("/api/continue-story", {
@@ -224,17 +222,14 @@ export default function FairytalePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to generate speech');
+        throw new Error('Failed to generate speech');
       }
 
       const data = await response.json();
-      console.log('Received audio URL:', data.audioUrl);
-      // Prepend with a slash to make it an absolute path
-      setFirstAudioUrl('/' + data.audioUrl);
+      setFirstAudioUrl(data.audioUrl);
     } catch (error) {
       console.error('Error generating first speech:', error);
-      setFirstAudioError(`Failed to generate speech for the first part: ${error.message}`);
+      setFirstAudioError("Failed to generate speech for the first part. Please try again.");
     } finally {
       setIsFirstAudioLoading(false);
     }
@@ -246,17 +241,7 @@ export default function FairytalePage() {
     setIsSecondAudioLoading(true);
     setSecondAudioError(null);
     try {
-      // Split the content by double newlines and find the index of the user's choice
-      const contentParts = story.content.split('\n\n');
-      const choiceIndex = contentParts.findIndex(part => 
-        part === userChoice // Use the stored userChoice instead of story.choices
-      );
-
-      // Get all content after the choice
-      const secondPartContent = contentParts.slice(choiceIndex + 1).join('\n\n');
-
-      console.log("Second part content:", secondPartContent); // Debug log
-
+      const secondPartContent = story.content.split('\n\n').slice(-1)[0];
       const response = await fetch('/api/generate-speech', {
         method: 'POST',
         headers: {
@@ -269,16 +254,14 @@ export default function FairytalePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || 'Failed to generate speech');
+        throw new Error('Failed to generate speech');
       }
 
       const data = await response.json();
-      console.log("Received second audio URL:", data.audioUrl); // Debug log
-      setSecondAudioUrl('/' + data.audioUrl);
+      setSecondAudioUrl(data.audioUrl);
     } catch (error) {
       console.error('Error generating second speech:', error);
-      setSecondAudioError(`Failed to generate speech for the second part: ${error.message}`);
+      setSecondAudioError("Failed to generate speech for the second part. Please try again.");
     } finally {
       setIsSecondAudioLoading(false);
     }
@@ -522,15 +505,12 @@ export default function FairytalePage() {
                         console.error("First audio error:", e.target.error);
                         setFirstAudioError(`Error loading first audio: ${e.target.error.message}`);
                       }}
-                      onLoadedMetadata={() => console.log("Audio metadata loaded")}
-                      onCanPlay={() => console.log("Audio can play")}
                     >
                       Your browser does not support the audio element.
                     </audio>
                     {firstAudioError && (
                       <p className="text-red-500 mt-2">{firstAudioError}</p>
                     )}
-                    <p className="text-sm mt-2">Audio URL: {firstAudioUrl}</p>
                   </div>
                 )}
                 {secondAudioUrl && (
