@@ -1,25 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  BookOpen,
-  Wand2,
-  Palette,
-  Send,
-  Crown,
-  Rocket,
-  Waves,
-  Leaf,
-  Volume2,
-} from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react';
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -57,8 +41,6 @@ export default function FairytalePage() {
     setImageUrl(null);
     setSecondImageUrl(null);
 
-    console.log("Form submitted with:", { name, age, theme, bookType });
-
     try {
       const response = await fetch("/api/initialize-story", {
         method: "POST",
@@ -73,15 +55,12 @@ export default function FairytalePage() {
         }),
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.details || "Failed to generate story");
       }
 
       const data = await response.json();
-      console.log("Received story data:", data);
       setStory({
         title: data.title,
         content: data.content,
@@ -95,7 +74,7 @@ export default function FairytalePage() {
       console.error("Error generating story:", error);
       setError(
         error.message ||
-          "An error occurred while generating the story. Please try again.",
+          "An error occurred while generating the story. Please try again."
       );
     } finally {
       setLoading(false);
@@ -121,7 +100,6 @@ export default function FairytalePage() {
       }
 
       const data = await response.json();
-      console.log("Received continuation data:", data);
       setStory((prevStory) => ({
         ...prevStory,
         content: prevStory.content + "\n\n" + choice + "\n\n" + data.content,
@@ -135,7 +113,7 @@ export default function FairytalePage() {
       console.error("Error continuing story:", error);
       setError(
         error.message ||
-          "An error occurred while continuing the story. Please try again.",
+          "An error occurred while continuing the story. Please try again."
       );
     } finally {
       setLoading(false);
@@ -144,7 +122,6 @@ export default function FairytalePage() {
 
   const generateImage = async (imagePrompt, isSecondImage = false) => {
     try {
-      console.log("Generating image with prompt:", imagePrompt);
       const response = await fetch("/api/generate-image", {
         method: "POST",
         headers: {
@@ -162,7 +139,6 @@ export default function FairytalePage() {
       }
 
       const data = await response.json();
-      console.log("Received image URL:", data.imageUrl);
       if (isSecondImage) {
         setSecondImageUrl(data.imageUrl);
       } else {
@@ -172,7 +148,7 @@ export default function FairytalePage() {
       console.error("Error generating image:", error);
       setError(
         error.message ||
-          "An error occurred while generating the image. Please try again.",
+          "An error occurred while generating the image. Please try again."
       );
     }
   };
@@ -218,25 +194,26 @@ export default function FairytalePage() {
 
     setIsGeneratingAudio(true);
     try {
-      const response = await fetch("/api/generate-speech", {
-        method: "POST",
+      const response = await fetch('/api/generate-speech', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           text: story.content,
-          fileName: `${story.title.replace(/\s+/g, "_").toLowerCase()}.mp3`,
+          fileName: `${name.toLowerCase()}_fairytale.mp3`,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate speech");
+        throw new Error('Failed to generate speech');
       }
 
       const data = await response.json();
-      setAudioUrl(data.audioUrl);
+      const fullAudioUrl = `/audio/${data.audioUrl}`;
+      setAudioUrl(fullAudioUrl);
     } catch (error) {
-      console.error("Error generating speech:", error);
+      console.error('Error generating speech:', error);
       setError("Failed to generate speech. Please try again.");
     } finally {
       setIsGeneratingAudio(false);
@@ -443,6 +420,7 @@ export default function FairytalePage() {
                 </div>
                 {audioUrl && (
                   <div className="mt-4">
+                    <h4 className="font-semibold text-purple-800 mb-2">Listen to the story:</h4>
                     <audio controls src={audioUrl} className="w-full">
                       Your browser does not support the audio element.
                     </audio>

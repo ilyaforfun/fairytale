@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const apiRoutes = require('./routes/api');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -10,8 +11,12 @@ app.use(express.json());
 // Serve static files from the React app build directory
 app.use(express.static(path.join(__dirname, 'client/dist')));
 
-// Serve static files from the public directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from the public directory, including audio
+app.use('/audio', (req, res, next) => {
+  const audioPath = path.join(__dirname, 'public/audio', req.url);
+  console.log('Audio file requested:', req.url);
+  express.static(path.join(__dirname, 'public/audio'))(req, res, next);
+});
 
 app.use('/api', apiRoutes);
 
