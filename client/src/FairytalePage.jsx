@@ -202,26 +202,25 @@ export default function FairytalePage() {
 
     setIsGeneratingAudio(true);
     try {
-      const response = await fetch("/api/generate-speech", {
-        method: "POST",
+      const response = await fetch('/api/generate-speech', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: story.content,
-          fileName: `${story.title.replace(/\s+/g, "_").toLowerCase()}.mp3`,
+          text: `${story.title}\n\n${story.content}`,
+          fileName: `${name.toLowerCase().replace(/\s+/g, '_')}_fairytale.mp3`,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate speech");
+        throw new Error('Failed to generate speech');
       }
 
       const data = await response.json();
-      console.log("Received audio URL:", data.audioUrl);
       setAudioUrl(data.audioUrl);
     } catch (error) {
-      console.error("Error generating speech:", error);
+      console.error('Error generating speech:', error);
       setError("Failed to generate speech. Please try again.");
     } finally {
       setIsGeneratingAudio(false);
@@ -436,7 +435,6 @@ export default function FairytalePage() {
                     >
                       Your browser does not support the audio element.
                     </audio>
-                    <p>Debug: Audio URL is {audioUrl}</p>
                   </div>
                 )}
                 {showPrompts && (
