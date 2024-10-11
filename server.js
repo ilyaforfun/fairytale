@@ -13,12 +13,7 @@ app.use(express.static(path.join(__dirname, 'client/dist')));
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Add a route to serve audio files
-app.get('/api/audio/:filename', (req, res) => {
-  const filename = req.params.filename;
-  const filePath = path.join(__dirname, 'public', 'audio', filename);
-  res.sendFile(filePath);
-});
+app.use('/api', apiRoutes);
 
 // For any other route, serve the index.html file
 app.get('*', (req, res) => {
