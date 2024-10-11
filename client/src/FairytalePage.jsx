@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf } from 'lucide-react'
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, VolumeUp } from 'lucide-react'
 
 export default function FairytalePage() {
   const [name, setName] = useState('')
@@ -18,6 +18,8 @@ export default function FairytalePage() {
   const [currentStage, setCurrentStage] = useState(0)
   const [imageUrl, setImageUrl] = useState(null)
   const [secondImageUrl, setSecondImageUrl] = useState(null)
+  const [audioUrl, setAudioUrl] = useState(null)
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
 
   const themes = [
     { value: 'princess', label: 'Princess Adventure', icon: Crown },
@@ -175,7 +177,38 @@ export default function FairytalePage() {
     setCurrentStage(0)
     setImageUrl(null)
     setSecondImageUrl(null)
+    setAudioUrl(null)
   }
+
+  const handleGenerateSpeech = async () => {
+    if (!story) return;
+
+    setIsGeneratingAudio(true);
+    try {
+      const response = await fetch('/api/generate-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: story.content,
+          fileName: `${story.title.replace(/\s+/g, '_').toLowerCase()}.mp3`,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate speech');
+      }
+
+      const data = await response.json();
+      setAudioUrl(data.audioUrl);
+    } catch (error) {
+      console.error('Error generating speech:', error);
+      setError('Failed to generate speech. Please try again.');
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -329,9 +362,26 @@ export default function FairytalePage() {
                     </Button>
                   </div>
                 )}
-                <Button onClick={togglePrompts} className="mt-4 bg-blue-500 hover:bg-blue-600 text-white">
-                  {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
-                </Button>
+                <div className="mt-4 flex justify-between">
+                  <Button onClick={togglePrompts} className="bg-blue-500 hover:bg-blue-600 text-white">
+                    {showPrompts ? 'Hide Prompts' : 'Show Prompts'}
+                  </Button>
+                  <Button
+                    onClick={handleGenerateSpeech}
+                    className="bg-green-500 hover:bg-green-600 text-white"
+                    disabled={isGeneratingAudio}
+                  >
+                    {isGeneratingAudio ? 'Generating...' : 'Generate Speech'}
+                    <VolumeUp className="ml-2 h-5 w-5" />
+                  </Button>
+                </div>
+                {audioUrl && (
+                  <div className="mt-4">
+                    <audio controls src={audioUrl} className="w-full">
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                )}
                 {showPrompts && (
                   <div className="mt-4 p-4 bg-gray-100 rounded-lg">
                     <h4 className="font-semibold text-purple-800">Story Generation Prompt:</h4>
