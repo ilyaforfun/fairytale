@@ -25,7 +25,7 @@ async function generateSpeech(text, outputFileName) {
     await fs.writeFile(speechFile, buffer);
 
     console.log(`Speech file generated: ${speechFile}`);
-    return outputFileName; // Return just the filename
+    return `/audio/${outputFileName}`;
   } catch (error) {
     console.error("Error generating speech:", error);
     throw new Error(`Failed to generate speech: ${error.message}`);
