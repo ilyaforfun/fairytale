@@ -13,11 +13,11 @@ async function initializeStory(childName, childAge, childInterests, bookType) {
     ? "The story should be suitable for a coloring book, with clear, distinct scenes that can be easily illustrated as black and white line drawings."
     : "";
 
-  lastPrompt = `Create the beginning of a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The story should be no more than 250 words, start to set up a clear moral lesson, and be suitable for children. ${coloringBookPrompt} Include a title for the story. At the end, provide two distinct options for what ${childName} could do next. Format these options as:
+  lastPrompt = `Create the beginning of a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The story should be no more than 250 words, start to set up a clear moral lesson, and be suitable for children. ${coloringBookPrompt} Include a title for the story. The story should always be about ${childName} and be suitable for a child aged ${childAge}. At the end, provide two distinct options for what ${childName} could do next. Format these options as:
 CHOICE A: [First option]
 CHOICE B: [Second option]
 
-After the story and choices, provide a separate, detailed image prompt that captures the essence of this part of the story. The image prompt should describe a scene that a child would enjoy seeing illustrated. Format this as:
+After the story and choices, provide a separate, detailed image prompt that captures the essence of this part of the story. The image prompt should describe a scene that a child would enjoy seeing illustrated. The prompt shall always include the fact that it is an illustration to a fairytale book. Format this as:
 IMAGE PROMPT: [Detailed image description]`;
 
   console.log("Story initialization prompt:", lastPrompt);
@@ -59,8 +59,8 @@ IMAGE PROMPT: [Detailed image description]`;
     };
 
     const imagePromptMatch = storyContent.match(/IMAGE PROMPT:\s*([\s\S]*?)$/);
-    const imagePrompt = imagePromptMatch 
-      ? imagePromptMatch[1].trim() 
+    const imagePrompt = imagePromptMatch
+      ? imagePromptMatch[1].trim()
       : `A fairytale scene featuring ${childName} in a ${childInterests}-themed setting`;
 
     const mainContent = storyContent
@@ -112,7 +112,10 @@ IMAGE PROMPT: [Detailed image description]`;
       messages: [{ role: "user", content: lastPrompt }],
     });
 
-    console.log("Claude API response for continuation:", JSON.stringify(response, null, 2));
+    console.log(
+      "Claude API response for continuation:",
+      JSON.stringify(response, null, 2),
+    );
 
     if (
       !response.content ||
@@ -123,14 +126,18 @@ IMAGE PROMPT: [Detailed image description]`;
     }
 
     const continuationContent = response.content[0].text.trim();
-    
-    const imagePromptMatch = continuationContent.match(/IMAGE PROMPT:\s*([\s\S]*?)$/);
-    const imagePrompt = imagePromptMatch 
-      ? imagePromptMatch[1].trim() 
+
+    const imagePromptMatch = continuationContent.match(
+      /IMAGE PROMPT:\s*([\s\S]*?)$/,
+    );
+    const imagePrompt = imagePromptMatch
+      ? imagePromptMatch[1].trim()
       : `A fairytale scene showing the conclusion of ${childName}'s adventure`;
 
-    const storyConclusion = continuationContent.replace(/IMAGE PROMPT:[\s\S]*/, "").trim();
-    
+    const storyConclusion = continuationContent
+      .replace(/IMAGE PROMPT:[\s\S]*/, "")
+      .trim();
+
     storyContext += `\n\n${choice}\n\n${storyConclusion}`;
 
     console.log("Extracted continuation data:", {
