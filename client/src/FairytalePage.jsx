@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -19,7 +19,9 @@ export default function FairytalePage() {
   const [imageUrl, setImageUrl] = useState(null);
   const [secondImageUrl, setSecondImageUrl] = useState(null);
   const [audioUrl, setAudioUrl] = useState(null);
-  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState(null);
+  const audioRef = useRef(null);
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -200,7 +202,8 @@ export default function FairytalePage() {
   const handleGenerateSpeech = async () => {
     if (!story) return;
 
-    setIsGeneratingAudio(true);
+    setIsAudioLoading(true);
+    setAudioError(null);
     try {
       const response = await fetch('/api/generate-speech', {
         method: 'POST',
@@ -221,11 +224,19 @@ export default function FairytalePage() {
       setAudioUrl(data.audioUrl);
     } catch (error) {
       console.error('Error generating speech:', error);
-      setError("Failed to generate speech. Please try again.");
+      setAudioError("Failed to generate speech. Please try again.");
     } finally {
-      setIsGeneratingAudio(false);
+      setIsAudioLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (audioUrl && audioRef.current) {
+      const audio = audioRef.current;
+      audio.src = audioUrl;
+      audio.load();
+    }
+  }, [audioUrl]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -419,22 +430,32 @@ export default function FairytalePage() {
                   <Button
                     onClick={handleGenerateSpeech}
                     className="bg-green-500 hover:bg-green-600 text-white"
-                    disabled={isGeneratingAudio}
+                    disabled={isAudioLoading}
                   >
-                    {isGeneratingAudio ? "Generating..." : "Generate Speech"}
+                    {isAudioLoading ? "Generating..." : "Generate Speech"}
                     <Volume2 className="ml-2 h-5 w-5" />
                   </Button>
                 </div>
                 {audioUrl && (
                   <div className="mt-4">
                     <audio 
+                      ref={audioRef}
                       controls 
-                      src={audioUrl} 
+                      src={audioUrl}
                       className="w-full"
-                      onError={(e) => console.error("Audio error:", e.target.error)}
+                      onError={(e) => {
+                        console.error("Audio error:", e.target.error);
+                        setAudioError(`Error loading audio: ${e.target.error.message}`);
+                      }}
                     >
                       Your browser does not support the audio element.
                     </audio>
+                    {audioError && (
+                      <p className="text-red-500 mt-2">{audioError}</p>
+                    )}
+                    {isAudioLoading && <p>Loading audio...</p>}
+                    {/* Remove the following line */}
+                    {/* <p className="text-sm text-gray-500 mt-1">Audio URL: {audioUrl}</p> */}
                   </div>
                 )}
                 {showPrompts && (
