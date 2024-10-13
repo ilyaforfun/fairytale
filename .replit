@@ -31,6 +31,10 @@ args = "Test Story Generation"
 task = "workflow.run"
 args = "Test Image Generation"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Deploy Fairytale Generator"
+
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
 author = "agent"
@@ -87,6 +91,18 @@ agentRequireRestartOnSave = false
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node -e \"const { generateImage } = require('./services/imageGenerator'); async function test() { try { const imageUrl = await generateImage('Alice and the Friendly Dragon'); console.log('Image URL:', imageUrl); } catch (error) { console.error('Error:', error); } } test();\""
+
+[[workflows.workflow]]
+name = "Deploy Fairytale Generator"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run deploy"
+waitForPort = 8000
 
 [deployment]
 run = ["sh", "-c", "cd client && npm run build && cd .. && node server.js"]

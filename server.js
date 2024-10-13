@@ -13,6 +13,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Serve static files from the React app build directory
+app.use(express.static(path.join(__dirname, 'client/dist')));
+
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -30,7 +33,7 @@ app.use('/audio', (req, res, next) => {
 
 app.use('/api', apiRoutes);
 
-// For any other route, serve the index.html file
+// For any other route, serve the index.html file from the React app build directory
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client/dist/index.html'));
 });
