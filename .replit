@@ -40,7 +40,7 @@ agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server.js"
+args = "npm start"
 waitForPort = 8000
 
 [[workflows.workflow]]
@@ -89,7 +89,7 @@ task = "shell.exec"
 args = "node -e \"const { generateImage } = require('./services/imageGenerator'); async function test() { try { const imageUrl = await generateImage('Alice and the Friendly Dragon'); console.log('Image URL:', imageUrl); } catch (error) { console.error('Error:', error); } } test();\""
 
 [deployment]
-run = ["sh", "-c", "node server.js"]
+run = ["sh", "-c", "cd client && npm run build && cd .. && node server.js"]
 deploymentTarget = "cloudrun"
 
 [[ports]]
