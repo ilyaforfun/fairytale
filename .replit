@@ -35,6 +35,10 @@ args = "Test Image Generation"
 task = "workflow.run"
 args = "Deploy Fairytale Generator"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Check Deploy Status"
+
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
 author = "agent"
@@ -94,6 +98,18 @@ args = "node -e \"const { generateImage } = require('./services/imageGenerator')
 
 [[workflows.workflow]]
 name = "Deploy Fairytale Generator"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run deploy"
+waitForPort = 8000
+
+[[workflows.workflow]]
+name = "Check Deploy Status"
 author = "agent"
 
 [workflows.workflow.metadata]
