@@ -33,6 +33,11 @@ app.use('/audio', (req, res, next) => {
 
 app.use('/api', apiRoutes);
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK', message: 'Server is running' });
+});
+
 // For any other route, serve the index.html file from the React app build directory
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client/dist/index.html'));
