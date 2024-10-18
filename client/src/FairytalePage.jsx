@@ -1,25 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  BookOpen,
-  Wand2,
-  Palette,
-  Send,
-  Crown,
-  Rocket,
-  Waves,
-  Leaf,
-  Volume2,
-} from "lucide-react";
+import React, { useState, useEffect, useRef } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
+import WaitingState from './components/WaitingState'
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -43,6 +28,8 @@ export default function FairytalePage() {
   const firstAudioRef = useRef(null);
   const secondAudioRef = useRef(null);
   const [userChoice, setUserChoice] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isImageGenerating, setIsImageGenerating] = useState(false);
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -58,143 +45,109 @@ export default function FairytalePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setIsGenerating(true);
     setError(null);
     setStory(null);
     setImageUrl(null);
     setSecondImageUrl(null);
 
-    console.log("Form submitted with:", { name, age, theme, bookType });
-
     try {
-      const response = await fetch("/api/initialize-story", {
-        method: "POST",
+      const response = await fetch('/api/initialize-story', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          childName: name,
-          childAge: age,
-          childInterests: theme,
-          bookType,
-        }),
+        body: JSON.stringify({ childName: name, childAge: age, childInterests: theme, bookType }),
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || "Failed to generate story");
+        throw new Error('Failed to generate story');
       }
 
       const data = await response.json();
-      console.log("Received story data:", data);
-      setStory({
-        title: data.title,
-        content: data.content,
-        choices: data.choices,
-        imagePrompt: data.imagePrompt,
-      });
+      setStory(data);
       setCurrentStage(1);
-      fetchPrompts();
-      generateImage(data.imagePrompt);
+
+      setIsImageGenerating(true);
+      const imageResponse = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imagePrompt: data.imagePrompt, isColoringBook: bookType === 'coloring' }),
+      });
+
+      if (!imageResponse.ok) {
+        throw new Error('Failed to generate image');
+      }
+
+      const imageData = await imageResponse.json();
+      setImageUrl(imageData.imageUrl);
+      setIsImageGenerating(false);
+
+      const promptsResponse = await fetch('/api/prompts');
+      const promptsData = await promptsResponse.json();
+      setPrompts(promptsData);
     } catch (error) {
-      console.error("Error generating story:", error);
-      setError(
-        error.message ||
-          "An error occurred while generating the story. Please try again.",
-      );
+      console.error('Error:', error);
+      setError('Oops! Something went wrong. Please try again.');
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
   };
 
   const handleContinueStory = async (choice) => {
-    setLoading(true);
+    setIsGenerating(true);
     setError(null);
     setUserChoice(choice);
 
     try {
-      const response = await fetch("/api/continue-story", {
-        method: "POST",
+      const response = await fetch('/api/continue-story', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ choice, childName: name }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || "Failed to continue story");
+        throw new Error('Failed to continue story');
       }
 
       const data = await response.json();
-      console.log("Received continuation data:", data);
-      setStory((prevStory) => ({
+      setStory(prevStory => ({
         ...prevStory,
-        content: prevStory.content + "\n\n" + choice + "\n\n" + data.content,
+        content: prevStory.content + '\n\n' + choice + '\n\n' + data.content,
         choices: null,
         imagePrompt: data.imagePrompt,
       }));
       setCurrentStage(2);
-      fetchPrompts();
-      generateImage(data.imagePrompt, true);
-    } catch (error) {
-      console.error("Error continuing story:", error);
-      setError(
-        error.message ||
-          "An error occurred while continuing the story. Please try again.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const generateImage = async (imagePrompt, isSecondImage = false) => {
-    try {
-      console.log("Generating image with prompt:", imagePrompt);
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
+      setIsImageGenerating(true);
+      const imageResponse = await fetch('/api/generate-image', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          imagePrompt,
-          isColoringBook: bookType === "coloring",
-        }),
+        body: JSON.stringify({ imagePrompt: data.imagePrompt, isColoringBook: bookType === 'coloring' }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || "Failed to generate image");
+      if (!imageResponse.ok) {
+        throw new Error('Failed to generate second image');
       }
 
-      const data = await response.json();
-      console.log("Received image URL:", data.imageUrl);
-      if (isSecondImage) {
-        setSecondImageUrl(data.imageUrl);
-      } else {
-        setImageUrl(data.imageUrl);
-      }
-    } catch (error) {
-      console.error("Error generating image:", error);
-      setError(
-        error.message ||
-          "An error occurred while generating the image. Please try again.",
-      );
-    }
-  };
+      const imageData = await imageResponse.json();
+      setSecondImageUrl(imageData.imageUrl);
+      setIsImageGenerating(false);
 
-  const fetchPrompts = async () => {
-    try {
-      const response = await fetch("/api/prompts");
-      if (!response.ok) {
-        throw new Error("Failed to fetch prompts");
-      }
-      const data = await response.json();
-      setPrompts(data);
+      const promptsResponse = await fetch('/api/prompts');
+      const promptsData = await promptsResponse.json();
+      setPrompts(promptsData);
     } catch (error) {
-      console.error("Error fetching prompts:", error);
+      console.error('Error:', error);
+      setError('Oops! Something went wrong. Please try again.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -248,7 +201,7 @@ export default function FairytalePage() {
     } catch (error) {
       console.error("Error generating first speech:", error);
       setFirstAudioError(
-        "Failed to generate speech for the first part. Please try again.",
+        "Failed to generate speech for the first part. Please try again."
       );
     } finally {
       setIsFirstAudioLoading(false);
@@ -261,19 +214,15 @@ export default function FairytalePage() {
     setIsSecondAudioLoading(true);
     setSecondAudioError(null);
     try {
-      // Split the content by double newlines
       const contentParts = story.content.split("\n\n");
-
-      // Find the index of the user's choice
       const choiceIndex = contentParts.findIndex(
-        (part) => part.trim() === userChoice.trim(),
+        (part) => part.trim() === userChoice.trim()
       );
 
       if (choiceIndex === -1) {
         throw new Error("Unable to find user choice in story content");
       }
 
-      // Get all content after the choice
       const secondPartContent = contentParts
         .slice(choiceIndex + 1)
         .join("\n\n");
@@ -298,7 +247,7 @@ export default function FairytalePage() {
     } catch (error) {
       console.error("Error generating second speech:", error);
       setSecondAudioError(
-        "Failed to generate speech for the second part. Please try again.",
+        "Failed to generate speech for the second part. Please try again."
       );
     } finally {
       setIsSecondAudioLoading(false);
@@ -323,6 +272,7 @@ export default function FairytalePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
+      {(isGenerating || isImageGenerating) && <WaitingState />}
       <div className="max-w-3xl mx-auto">
         <Card className="shadow-xl bg-white">
           <CardHeader>
@@ -421,9 +371,9 @@ export default function FairytalePage() {
                 <Button
                   type="submit"
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  disabled={loading}
+                  disabled={isGenerating}
                 >
-                  {loading ? "Generating..." : "Generate Fairytale"}
+                  {isGenerating ? "Generating..." : "Generate Fairytale"}
                   <Wand2 className="ml-2 h-5 w-5" />
                 </Button>
               </form>
@@ -476,14 +426,14 @@ export default function FairytalePage() {
                       <Button
                         onClick={() => handleContinueStory(story.choices.A)}
                         className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={loading}
+                        disabled={isGenerating}
                       >
                         {story.choices.A}
                       </Button>
                       <Button
                         onClick={() => handleContinueStory(story.choices.B)}
                         className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={loading}
+                        disabled={isGenerating}
                       >
                         {story.choices.B}
                       </Button>
@@ -548,7 +498,7 @@ export default function FairytalePage() {
                       onError={(e) => {
                         console.error("First audio error:", e.target.error);
                         setFirstAudioError(
-                          `Error loading first audio: ${e.target.error.message}`,
+                          `Error loading first audio: ${e.target.error.message}`
                         );
                       }}
                     >
@@ -572,7 +522,7 @@ export default function FairytalePage() {
                       onError={(e) => {
                         console.error("Second audio error:", e.target.error);
                         setSecondAudioError(
-                          `Error loading second audio: ${e.target.error.message}`,
+                          `Error loading second audio: ${e.target.error.message}`
                         );
                       }}
                     >
