@@ -54,13 +54,13 @@ export default function WaitingState() {
           className="h-2 bg-purple-200 rounded-full overflow-hidden"
           initial={{ width: 0 }}
           animate={{ width: "100%" }}
-          transition={{ duration: 30, ease: "linear" }}
+          transition={{ duration: 20, ease: "linear" }}
         >
           <motion.div
             className="h-full bg-purple-600"
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
-            transition={{ duration: 30, ease: "linear" }}
+            transition={{ duration: 20, ease: "linear" }}
           />
         </motion.div>
       </div>
