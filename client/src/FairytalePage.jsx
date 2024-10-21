@@ -33,8 +33,7 @@ export default function FairytalePage() {
   const [isImageGenerating, setIsImageGenerating] = useState(false);
   const [showCharacterCreator, setShowCharacterCreator] = useState(false);
   const [characterAttributes, setCharacterAttributes] = useState({});
-  const [attributeError, setAttributeError] = useState("");
-  const [allAttributesSelected, setAllAttributesSelected] = useState(false)
+  const [allAttributesSelected, setAllAttributesSelected] = useState(false);
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -56,13 +55,12 @@ export default function FairytalePage() {
     }
 
     if (!allAttributesSelected) {
-      setAttributeError("Please select all character attributes before generating the story.");
+      setError("Please select all character attributes before generating the story.");
       return;
     }
 
-    setAttributeError("");
-    setIsGenerating(true);
     setError(null);
+    setIsGenerating(true);
     setStory(null);
     setImageUrl(null);
     setSecondImageUrl(null);
@@ -396,15 +394,10 @@ export default function FairytalePage() {
                     </div>
                   </>
                 ) : (
-                  <>
-                    <CharacterCreator 
-                      onAttributesChange={setCharacterAttributes}
-                      onAllAttributesSelected={setAllAttributesSelected}
-                    />
-                    {attributeError && (
-                      <div className="text-red-500 text-sm mt-2">{attributeError}</div>
-                    )}
-                  </>
+                  <CharacterCreator 
+                    onAttributesChange={setCharacterAttributes}
+                    onAllAttributesSelected={setAllAttributesSelected}
+                  />
                 )}
                 <Button
                   type="submit"
