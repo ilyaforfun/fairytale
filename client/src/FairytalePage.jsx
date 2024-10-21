@@ -33,6 +33,7 @@ export default function FairytalePage() {
   const [isImageGenerating, setIsImageGenerating] = useState(false);
   const [showCharacterCreator, setShowCharacterCreator] = useState(false);
   const [characterAttributes, setCharacterAttributes] = useState({});
+  const [attributeError, setAttributeError] = useState("");
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -52,6 +53,16 @@ export default function FairytalePage() {
       setShowCharacterCreator(true);
       return;
     }
+
+    const requiredAttributes = ['Gender', 'Hair Style', 'Hair Color', 'Skin Color', 'Eye Color'];
+    const missingAttributes = requiredAttributes.filter(attr => !characterAttributes[attr]);
+
+    if (missingAttributes.length > 0) {
+      setAttributeError(`Please select all character attributes: ${missingAttributes.join(', ')}`);
+      return;
+    }
+
+    setAttributeError("");
     setIsGenerating(true);
     setError(null);
     setStory(null);
@@ -387,9 +398,14 @@ export default function FairytalePage() {
                     </div>
                   </>
                 ) : (
-                  <CharacterCreator 
-                    onAttributesChange={setCharacterAttributes}
-                  />
+                  <>
+                    <CharacterCreator 
+                      onAttributesChange={setCharacterAttributes}
+                    />
+                    {attributeError && (
+                      <div className="text-red-500 text-sm mt-2">{attributeError}</div>
+                    )}
+                  </>
                 )}
                 <Button
                   type="submit"

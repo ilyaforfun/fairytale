@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -33,19 +34,19 @@ export default function CharacterCreator({ onAttributesChange }) {
   const handleLeftChoice = () => {
     setSelections((prev) => ({
       ...prev,
-      [currentAttribute.name]: (prev[currentAttribute.name] - 1 + currentAttribute.options.length) % currentAttribute.options.length
+      [currentAttribute.name]: currentAttribute.options[(currentSelection - 1 + currentAttribute.options.length) % currentAttribute.options.length]
     }))
   }
 
   const handleRightChoice = () => {
     setSelections((prev) => ({
       ...prev,
-      [currentAttribute.name]: (prev[currentAttribute.name] + 1) % currentAttribute.options.length
+      [currentAttribute.name]: currentAttribute.options[(currentSelection + 1) % currentAttribute.options.length]
     }))
   }
 
   const getCharacterSummary = () => {
-    return attributes.map(attr => `${attr.name}: ${attr.options[selections[attr.name] || 0]}`).join(', ')
+    return Object.entries(selections).map(([attr, value]) => `${attr}: ${value}`).join(', ')
   }
 
   return (
