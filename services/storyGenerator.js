@@ -7,17 +7,21 @@ const anthropic = new Anthropic({
 let lastPrompt = "";
 let storyContext = "";
 
-async function initializeStory(childName, childAge, childInterests, bookType) {
+async function initializeStory(childName, childAge, childInterests, bookType, characterAttributes) {
   const isColoringBook = bookType === "coloring";
   const coloringBookPrompt = isColoringBook
     ? "The story should be suitable for a coloring book, with clear, distinct scenes that can be easily illustrated as black and white line drawings."
     : "";
 
-  lastPrompt = `Create the beginning of a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The story should be no more than 250 words, start to set up a clear moral lesson, and be suitable for children. ${coloringBookPrompt} Include a title for the story. The story should always be about ${childName} and be appropriate for the ${childAge} years old child. At the end, provide two distinct options for what ${childName} could do next. Format these options as:
+  const characterDescription = Object.entries(characterAttributes)
+    .map(([key, value]) => `${key}: ${value}`)
+    .join(", ");
+
+  lastPrompt = `Create the beginning of a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The child character in the story should have the following attributes: ${characterDescription}. The story should be no more than 250 words, start to set up a clear moral lesson, and be suitable for children. ${coloringBookPrompt} Include a title for the story. The story should always be about ${childName} and be appropriate for the ${childAge} years old child. At the end, provide two distinct options for what ${childName} could do next. Format these options as:
   CHOICE A: [First option]
   CHOICE B: [Second option]
 
-  After the story and choices, provide a separate, detailed image prompt that captures the essence of this part of the story. The image prompt should describe a scene that a child would enjoy seeing illustrated. The prompt should always include the fact that this is an illustration for the fairytale book. Format this as:
+  After the story and choices, provide a separate, detailed image prompt that captures the essence of this part of the story. The image prompt should describe a scene that a child would enjoy seeing illustrated, including the character's appearance based on the given attributes. The prompt should always include the fact that this is an illustration for the fairytale book. Format this as:
   IMAGE PROMPT: [Detailed image description]`;
 
   console.log("Story initialization prompt:", lastPrompt);

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
 import WaitingState from './components/WaitingState'
+import CharacterCreator from './components/CharacterCreator'
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -30,6 +31,8 @@ export default function FairytalePage() {
   const [userChoice, setUserChoice] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isImageGenerating, setIsImageGenerating] = useState(false);
+  const [showCharacterCreator, setShowCharacterCreator] = useState(false);
+  const [characterAttributes, setCharacterAttributes] = useState({});
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -45,6 +48,10 @@ export default function FairytalePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!showCharacterCreator) {
+      setShowCharacterCreator(true);
+      return;
+    }
     setIsGenerating(true);
     setError(null);
     setStory(null);
@@ -57,7 +64,13 @@ export default function FairytalePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ childName: name, childAge: age, childInterests: theme, bookType }),
+        body: JSON.stringify({ 
+          childName: name, 
+          childAge: age, 
+          childInterests: theme, 
+          bookType,
+          characterAttributes 
+        }),
       });
 
       if (!response.ok) {
@@ -173,6 +186,8 @@ export default function FairytalePage() {
     setSecondImageUrl(null);
     setFirstAudioUrl(null);
     setSecondAudioUrl(null);
+    setShowCharacterCreator(false);
+    setCharacterAttributes({});
   };
 
   const handleGenerateFirstSpeech = async () => {
@@ -286,94 +301,102 @@ export default function FairytalePage() {
           <CardContent>
             {!story && (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Child's Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Enter the child's name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="border-2 border-purple-300 focus:border-purple-500"
+                {!showCharacterCreator ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Child's Name</Label>
+                      <Input
+                        id="name"
+                        placeholder="Enter the child's name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        className="border-2 border-purple-300 focus:border-purple-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Child's Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        placeholder="Enter the child's age"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        required
+                        min="1"
+                        max="12"
+                        className="border-2 border-purple-300 focus:border-purple-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Fairytale Theme</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        {themes.map((item) => {
+                          const Icon = item.icon;
+                          const isSelected = theme === item.value;
+                          return (
+                            <Button
+                              key={item.value}
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 ${
+                                isSelected
+                                  ? "bg-purple-600 text-white shadow-lg scale-105 border-4 border-yellow-400"
+                                  : "hover:bg-purple-100 hover:scale-102"
+                              }`}
+                              onClick={() => setTheme(item.value)}
+                            >
+                              <Icon
+                                className={`h-8 w-8 mb-2 ${isSelected ? "text-yellow-400" : "text-purple-600"}`}
+                              />
+                              <span className="text-sm font-medium">
+                                {item.label}
+                              </span>
+                              {isSelected && (
+                                <span className="absolute top-0 right-0 bg-yellow-400 text-purple-600 px-2 py-1 text-xs font-bold rounded-bl-lg">
+                                  Selected
+                                </span>
+                              )}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Book Type</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        {bookTypes.map((item) => {
+                          const isSelected = bookType === item.value;
+                          return (
+                            <Button
+                              key={item.value}
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              className={`h-auto flex items-center justify-center p-4 transition-all duration-200 ${
+                                isSelected
+                                  ? "bg-purple-600 text-white font-bold"
+                                  : "bg-white text-purple-600 hover:bg-purple-100"
+                              }`}
+                              onClick={() => setBookType(item.value)}
+                            >
+                              <span className="text-sm">{item.label}</span>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <CharacterCreator 
+                    onAttributesChange={setCharacterAttributes}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="age">Child's Age</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    placeholder="Enter the child's age"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    required
-                    min="1"
-                    max="12"
-                    className="border-2 border-purple-300 focus:border-purple-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Fairytale Theme</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {themes.map((item) => {
-                      const Icon = item.icon;
-                      const isSelected = theme === item.value;
-                      return (
-                        <Button
-                          key={item.value}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 ${
-                            isSelected
-                              ? "bg-purple-600 text-white shadow-lg scale-105 border-4 border-yellow-400"
-                              : "hover:bg-purple-100 hover:scale-102"
-                          }`}
-                          onClick={() => setTheme(item.value)}
-                        >
-                          <Icon
-                            className={`h-8 w-8 mb-2 ${isSelected ? "text-yellow-400" : "text-purple-600"}`}
-                          />
-                          <span className="text-sm font-medium">
-                            {item.label}
-                          </span>
-                          {isSelected && (
-                            <span className="absolute top-0 right-0 bg-yellow-400 text-purple-600 px-2 py-1 text-xs font-bold rounded-bl-lg">
-                              Selected
-                            </span>
-                          )}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Book Type</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {bookTypes.map((item) => {
-                      const isSelected = bookType === item.value;
-                      return (
-                        <Button
-                          key={item.value}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          className={`h-auto flex items-center justify-center p-4 transition-all duration-200 ${
-                            isSelected
-                              ? "bg-purple-600 text-white font-bold"
-                              : "bg-white text-purple-600 hover:bg-purple-100"
-                          }`}
-                          onClick={() => setBookType(item.value)}
-                        >
-                          <span className="text-sm">{item.label}</span>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
+                )}
                 <Button
                   type="submit"
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   disabled={isGenerating}
                 >
-                  {isGenerating ? "Generating..." : "Generate Fairytale"}
+                  {isGenerating ? "Generating..." : showCharacterCreator ? "Generate Fairytale" : "Next: Create Character"}
                   <Wand2 className="ml-2 h-5 w-5" />
                 </Button>
               </form>

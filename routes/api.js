@@ -6,11 +6,11 @@ const textToSpeech = require('../services/textToSpeech');
 
 router.post('/initialize-story', async (req, res) => {
     try {
-        const { childName, childAge, childInterests, bookType } = req.body;
+        const { childName, childAge, childInterests, bookType, characterAttributes } = req.body;
 
-        console.log('Received request:', { childName, childAge, childInterests, bookType });
+        console.log('Received request:', { childName, childAge, childInterests, bookType, characterAttributes });
 
-        const story = await storyGenerator.initializeStory(childName, childAge, childInterests, bookType);
+        const story = await storyGenerator.initializeStory(childName, childAge, childInterests, bookType, characterAttributes);
 
         console.log('Generated initial story:', story);
 
