@@ -25,10 +25,6 @@ args = "Test Story and Image Generation"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Test Story Generation"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "Test Image Generation"
 
 [[workflows.workflow.tasks]]
@@ -38,6 +34,10 @@ args = "Deploy Fairytale Generator"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Check Deploy Status"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Test Story Generation"
 
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
@@ -75,17 +75,6 @@ task = "shell.exec"
 args = "node test_story_generation.js"
 
 [[workflows.workflow]]
-name = "Test Story Generation"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node -e \"const { generateStory } = require('./services/storyGenerator'); async function test() { try { const story = await generateStory('Alice', 7, 'dragons'); console.log('Story:', story); } catch (error) { console.error('Error:', error); } } test();\""
-
-[[workflows.workflow]]
 name = "Test Image Generation"
 author = "agent"
 
@@ -119,6 +108,17 @@ agentRequireRestartOnSave = false
 task = "shell.exec"
 args = "npm run deploy"
 waitForPort = 8000
+
+[[workflows.workflow]]
+name = "Test Story Generation"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node -e \"const { initializeStory } = require('./services/storyGenerator'); async function test() { try { const story = await initializeStory('Alice', 7, 'dragons', 'pictured', { Gender: 'Girl', 'Hair Style': 'Long', 'Hair Color': 'Blonde', 'Skin Color': 'Light', 'Eye Color': 'Blue' }); console.log('Story:', JSON.stringify(story, null, 2)); } catch (error) { console.error('Error:', error); } } test();\""
 
 [deployment]
 run = ["sh", "-c", "cd client && npm run build && cd .. && node server.js"]
