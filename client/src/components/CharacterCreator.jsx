@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,16 +11,18 @@ const attributes = [
   { name: 'Eye Color', options: ['Brown', 'Blue', 'Green', 'Hazel', 'Gray'] },
 ]
 
-export default function CharacterCreator({ onAttributesChange }) {
+export default function CharacterCreator({ onAttributesChange, onAllAttributesSelected }) {
   const [currentAttributeIndex, setCurrentAttributeIndex] = useState(0)
   const [selections, setSelections] = useState({})
 
   const currentAttribute = attributes[currentAttributeIndex]
-  const currentSelection = selections[currentAttribute.name] || 0
+  const currentSelection = selections[currentAttribute.name]
 
   useEffect(() => {
     onAttributesChange(selections)
-  }, [selections, onAttributesChange])
+    const allSelected = attributes.every(attr => selections[attr.name])
+    onAllAttributesSelected(allSelected)
+  }, [selections, onAttributesChange, onAllAttributesSelected])
 
   const handlePrevious = () => {
     setCurrentAttributeIndex((prev) => (prev > 0 ? prev - 1 : prev))
@@ -31,17 +32,10 @@ export default function CharacterCreator({ onAttributesChange }) {
     setCurrentAttributeIndex((prev) => (prev < attributes.length - 1 ? prev + 1 : prev))
   }
 
-  const handleLeftChoice = () => {
+  const handleSelection = (option) => {
     setSelections((prev) => ({
       ...prev,
-      [currentAttribute.name]: currentAttribute.options[(currentSelection - 1 + currentAttribute.options.length) % currentAttribute.options.length]
-    }))
-  }
-
-  const handleRightChoice = () => {
-    setSelections((prev) => ({
-      ...prev,
-      [currentAttribute.name]: currentAttribute.options[(currentSelection + 1) % currentAttribute.options.length]
+      [currentAttribute.name]: option
     }))
   }
 
@@ -74,28 +68,17 @@ export default function CharacterCreator({ onAttributesChange }) {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex items-center justify-between space-x-4">
-          <Button
-            onClick={handleLeftChoice}
-            variant="outline"
-            size="lg"
-            className="w-1/3"
-          >
-            <ChevronLeft className="h-6 w-6 mr-2" />
-            {currentAttribute.options[(currentSelection - 1 + currentAttribute.options.length) % currentAttribute.options.length]}
-          </Button>
-          <div className="text-center font-bold text-lg text-purple-600">
-            {currentAttribute.options[currentSelection]}
-          </div>
-          <Button
-            onClick={handleRightChoice}
-            variant="outline"
-            size="lg"
-            className="w-1/3"
-          >
-            {currentAttribute.options[(currentSelection + 1) % currentAttribute.options.length]}
-            <ChevronRight className="h-6 w-6 ml-2" />
-          </Button>
+        <div className="grid grid-cols-2 gap-2">
+          {currentAttribute.options.map((option) => (
+            <Button
+              key={option}
+              onClick={() => handleSelection(option)}
+              variant={currentSelection === option ? "default" : "outline"}
+              className="w-full"
+            >
+              {option}
+            </Button>
+          ))}
         </div>
         <div className="mt-6 p-4 bg-purple-100 rounded-lg">
           <h3 className="font-semibold text-purple-800 mb-2">Character Summary</h3>

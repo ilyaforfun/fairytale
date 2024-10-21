@@ -34,6 +34,7 @@ export default function FairytalePage() {
   const [showCharacterCreator, setShowCharacterCreator] = useState(false);
   const [characterAttributes, setCharacterAttributes] = useState({});
   const [attributeError, setAttributeError] = useState("");
+  const [allAttributesSelected, setAllAttributesSelected] = useState(false)
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -54,11 +55,8 @@ export default function FairytalePage() {
       return;
     }
 
-    const requiredAttributes = ['Gender', 'Hair Style', 'Hair Color', 'Skin Color', 'Eye Color'];
-    const missingAttributes = requiredAttributes.filter(attr => !characterAttributes[attr]);
-
-    if (missingAttributes.length > 0) {
-      setAttributeError(`Please select all character attributes: ${missingAttributes.join(', ')}`);
+    if (!allAttributesSelected) {
+      setAttributeError("Please select all character attributes before generating the story.");
       return;
     }
 
@@ -401,6 +399,7 @@ export default function FairytalePage() {
                   <>
                     <CharacterCreator 
                       onAttributesChange={setCharacterAttributes}
+                      onAllAttributesSelected={setAllAttributesSelected}
                     />
                     {attributeError && (
                       <div className="text-red-500 text-sm mt-2">{attributeError}</div>
@@ -410,7 +409,7 @@ export default function FairytalePage() {
                 <Button
                   type="submit"
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  disabled={isGenerating}
+                  disabled={isGenerating || (showCharacterCreator && !allAttributesSelected)}
                 >
                   {isGenerating ? "Generating..." : showCharacterCreator ? "Generate Fairytale" : "Next: Create Character"}
                   <Wand2 className="ml-2 h-5 w-5" />
