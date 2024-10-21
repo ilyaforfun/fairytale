@@ -22,7 +22,7 @@ export default function CharacterCreator({ onAttributesChange, onAllAttributesSe
     onAttributesChange(selections)
     const allSelected = attributes.every(attr => selections[attr.name])
     onAllAttributesSelected(allSelected)
-    console.log('Character attributes updated:', selections, 'All selected:', allSelected) // Added for debugging
+    console.log('Character attributes updated:', selections, 'All selected:', allSelected)
   }, [selections, onAttributesChange, onAllAttributesSelected])
 
   const handlePrevious = () => {
@@ -92,9 +92,13 @@ export default function CharacterCreator({ onAttributesChange, onAllAttributesSe
             {getCharacterSummary()}
           </p>
         </div>
-        {allAttributesSelected && (
+        {allAttributesSelected ? (
           <div className="text-center text-green-600 font-semibold">
             All attributes selected! You can now generate your story.
+          </div>
+        ) : (
+          <div className="text-center text-yellow-600 font-semibold">
+            Please select all attributes before generating your story.
           </div>
         )}
       </CardContent>
