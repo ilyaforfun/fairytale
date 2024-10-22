@@ -1,11 +1,45 @@
 const express = require('express');
 const path = require('path');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const session = require('express-session');
+const config = require('./config');
 const apiRoutes = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 8000;
 
+// Passport config
+passport.use(new GoogleStrategy({
+    clientID: config.google.clientID,
+    clientSecret: config.google.clientSecret,
+    callbackURL: config.google.callbackURL
+  },
+  (accessToken, refreshToken, profile, done) => {
+    // Here you would typically find or create a user in your database
+    // For now, we'll just pass the profile info
+    return done(null, profile);
+  }
+));
+
+passport.serializeUser((user, done) => {
+  done(null, user);
+});
+
+passport.deserializeUser((obj, done) => {
+  done(null, obj);
+});
+
 app.use(express.json());
+app.use(session({
+  secret: config.session.cookieKey,
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Initialize Passport and restore authentication state, if any, from the session
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Add this logging middleware
 app.use((req, res, next) => {
@@ -31,6 +65,23 @@ app.use('/audio', (req, res, next) => {
   });
 });
 
+// Auth Routes
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
+
+app.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
+});
+
+// API routes
 app.use('/api', apiRoutes);
 
 // Health check endpoint
@@ -41,17 +92,6 @@ app.get('/health', (req, res) => {
 // For any other route, serve the index.html file from the React app build directory
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'client/dist/index.html'));
-});
-
-// Test route for audio files
-app.get('/test-audio', (req, res) => {
-  const testAudioPath = path.join(__dirname, 'public', 'audio', 'test_speech.mp3');
-  res.sendFile(testAudioPath, (err) => {
-    if (err) {
-      console.error(`Error serving test audio file: ${err.message}`);
-      res.status(404).send('Audio file not found');
-    }
-  });
 });
 
 app.listen(PORT, '0.0.0.0', () => {

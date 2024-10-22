@@ -34,6 +34,7 @@ export default function FairytalePage() {
   const [showCharacterCreator, setShowCharacterCreator] = useState(false);
   const [characterAttributes, setCharacterAttributes] = useState({});
   const [allAttributesSelected, setAllAttributesSelected] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -46,6 +47,21 @@ export default function FairytalePage() {
     { value: "pictured", label: "Pictured Fairy Tale" },
     { value: "coloring", label: "Coloring Book" },
   ];
+
+  useEffect(() => {
+    fetch('/api/check-auth')
+      .then(response => response.json())
+      .then(data => setIsAuthenticated(data.isAuthenticated))
+      .catch(error => console.error('Error checking authentication:', error));
+  }, []);
+
+  const handleLogin = () => {
+    window.location.href = '/auth/google';
+  };
+
+  const handleLogout = () => {
+    window.location.href = '/logout';
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -306,281 +322,297 @@ export default function FairytalePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {!story && (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {!showCharacterCreator ? (
-                  <>
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Child's Name</Label>
-                      <Input
-                        id="name"
-                        placeholder="Enter the child's name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                        className="border-2 border-purple-300 focus:border-purple-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="age">Child's Age</Label>
-                      <Input
-                        id="age"
-                        type="number"
-                        placeholder="Enter the child's age"
-                        value={age}
-                        onChange={(e) => setAge(e.target.value)}
-                        required
-                        min="1"
-                        max="12"
-                        className="border-2 border-purple-300 focus:border-purple-500"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Fairytale Theme</Label>
-                      <div className="grid grid-cols-2 gap-4">
-                        {themes.map((item) => {
-                          const Icon = item.icon;
-                          const isSelected = theme === item.value;
-                          return (
-                            <Button
-                              key={item.value}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 ${
-                                isSelected
-                                  ? "bg-purple-600 text-white shadow-lg scale-105 border-4 border-yellow-400"
-                                  : "hover:bg-purple-100 hover:scale-102"
-                              }`}
-                              onClick={() => setTheme(item.value)}
-                            >
-                              <Icon
-                                className={`h-8 w-8 mb-2 ${isSelected ? "text-yellow-400" : "text-purple-600"}`}
-                              />
-                              <span className="text-sm font-medium">
-                                {item.label}
-                              </span>
-                              {isSelected && (
-                                <span className="absolute top-0 right-0 bg-yellow-400 text-purple-600 px-2 py-1 text-xs font-bold rounded-bl-lg">
-                                  Selected
-                                </span>
-                              )}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Book Type</Label>
-                      <div className="grid grid-cols-2 gap-4">
-                        {bookTypes.map((item) => {
-                          const isSelected = bookType === item.value;
-                          return (
-                            <Button
-                              key={item.value}
-                              type="button"
-                              variant={isSelected ? "default" : "outline"}
-                              className={`h-auto flex items-center justify-center p-4 transition-all duration-200 ${
-                                isSelected
-                                  ? "bg-purple-600 text-white font-bold"
-                                  : "bg-white text-purple-600 hover:bg-purple-100"
-                              }`}
-                              onClick={() => setBookType(item.value)}
-                            >
-                              <span className="text-sm">{item.label}</span>
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <CharacterCreator 
-                    onAttributesChange={setCharacterAttributes}
-                    onAllAttributesSelected={setAllAttributesSelected}
-                  />
-                )}
-                <Button
-                  type="submit"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  disabled={isGenerating || (showCharacterCreator && !allAttributesSelected)}
-                >
-                  {isGenerating ? "Generating..." : showCharacterCreator ? "Generate Fairytale" : "Next: Create Character"}
-                  <Wand2 className="ml-2 h-5 w-5" />
+            {!isAuthenticated ? (
+              <div className="text-center">
+                <p className="mb-4">Please log in to create your fairytale</p>
+                <Button onClick={handleLogin} className="bg-blue-500 hover:bg-blue-600 text-white">
+                  Log in with Google
                 </Button>
-              </form>
-            )}
-            {error && (
-              <div className="mt-4 text-red-600 text-center">{error}</div>
-            )}
-            {story && (
-              <div className="mt-6">
-                <h3 className="text-2xl font-semibold text-purple-800 mb-4">
-                  {story.title}
-                </h3>
-                {splitStoryContent(story.content).map((paragraph, index) => (
-                  <div key={index} className="mb-4">
-                    <div className="prose prose-sm max-w-none">
-                      <p className="text-gray-700 whitespace-pre-wrap">
-                        {paragraph}
-                      </p>
-                    </div>
-                    {index === 0 && imageUrl && (
-                      <div className="mt-4">
-                        <img
-                          src={imageUrl}
-                          alt="First Story Illustration"
-                          className="w-full rounded-lg shadow-md"
-                        />
-                      </div>
-                    )}
-                    {index === splitStoryContent(story.content).length - 1 &&
-                      secondImageUrl && (
-                        <div className="mt-4">
-                          <img
-                            src={secondImageUrl}
-                            alt="Second Story Illustration"
-                            className="w-full rounded-lg shadow-md"
+              </div>
+            ) : (
+              <>
+                {!story && (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {!showCharacterCreator ? (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="name">Child's Name</Label>
+                          <Input
+                            id="name"
+                            placeholder="Enter the child's name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            required
+                            className="border-2 border-purple-300 focus:border-purple-500"
                           />
                         </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="age">Child's Age</Label>
+                          <Input
+                            id="age"
+                            type="number"
+                            placeholder="Enter the child's age"
+                            value={age}
+                            onChange={(e) => setAge(e.target.value)}
+                            required
+                            min="1"
+                            max="12"
+                            className="border-2 border-purple-300 focus:border-purple-500"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Fairytale Theme</Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            {themes.map((item) => {
+                              const Icon = item.icon;
+                              const isSelected = theme === item.value;
+                              return (
+                                <Button
+                                  key={item.value}
+                                  type="button"
+                                  variant={isSelected ? "default" : "outline"}
+                                  className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 ${
+                                    isSelected
+                                      ? "bg-purple-600 text-white shadow-lg scale-105 border-4 border-yellow-400"
+                                      : "hover:bg-purple-100 hover:scale-102"
+                                  }`}
+                                  onClick={() => setTheme(item.value)}
+                                >
+                                  <Icon
+                                    className={`h-8 w-8 mb-2 ${isSelected ? "text-yellow-400" : "text-purple-600"}`}
+                                  />
+                                  <span className="text-sm font-medium">
+                                    {item.label}
+                                  </span>
+                                  {isSelected && (
+                                    <span className="absolute top-0 right-0 bg-yellow-400 text-purple-600 px-2 py-1 text-xs font-bold rounded-bl-lg">
+                                      Selected
+                                    </span>
+                                  )}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Book Type</Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            {bookTypes.map((item) => {
+                              const isSelected = bookType === item.value;
+                              return (
+                                <Button
+                                  key={item.value}
+                                  type="button"
+                                  variant={isSelected ? "default" : "outline"}
+                                  className={`h-auto flex items-center justify-center p-4 transition-all duration-200 ${
+                                    isSelected
+                                      ? "bg-purple-600 text-white font-bold"
+                                      : "bg-white text-purple-600 hover:bg-purple-100"
+                                  }`}
+                                  onClick={() => setBookType(item.value)}
+                                >
+                                  <span className="text-sm">{item.label}</span>
+                                </Button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <CharacterCreator 
+                        onAttributesChange={setCharacterAttributes}
+                        onAllAttributesSelected={setAllAttributesSelected}
+                      />
+                    )}
+                    <Button
+                      type="submit"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      disabled={isGenerating || (showCharacterCreator && !allAttributesSelected)}
+                    >
+                      {isGenerating ? "Generating..." : showCharacterCreator ? "Generate Fairytale" : "Next: Create Character"}
+                      <Wand2 className="ml-2 h-5 w-5" />
+                    </Button>
+                  </form>
+                )}
+                {error && (
+                  <div className="mt-4 text-red-600 text-center">{error}</div>
+                )}
+                {story && (
+                  <div className="mt-6">
+                    <h3 className="text-2xl font-semibold text-purple-800 mb-4">
+                      {story.title}
+                    </h3>
+                    {splitStoryContent(story.content).map((paragraph, index) => (
+                      <div key={index} className="mb-4">
+                        <div className="prose prose-sm max-w-none">
+                          <p className="text-gray-700 whitespace-pre-wrap">
+                            {paragraph}
+                          </p>
+                        </div>
+                        {index === 0 && imageUrl && (
+                          <div className="mt-4">
+                            <img
+                              src={imageUrl}
+                              alt="First Story Illustration"
+                              className="w-full rounded-lg shadow-md"
+                            />
+                          </div>
+                        )}
+                        {index === splitStoryContent(story.content).length - 1 &&
+                          secondImageUrl && (
+                            <div className="mt-4">
+                              <img
+                                src={secondImageUrl}
+                                alt="Second Story Illustration"
+                                className="w-full rounded-lg shadow-md"
+                              />
+                            </div>
+                          )}
+                      </div>
+                    ))}
+                    <div className="mt-4 text-purple-800 font-semibold">
+                      Stage: {currentStage} / 2
+                    </div>
+                    {story.choices && currentStage === 1 && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-purple-800 mb-2">
+                          What happens next?
+                        </h4>
+                        <div className="grid grid-cols-1 gap-2">
+                          <Button
+                            onClick={() => handleContinueStory(story.choices.A)}
+                            className="bg-purple-500 hover:bg-purple-600 text-white"
+                            disabled={isGenerating}
+                          >
+                            {story.choices.A}
+                          </Button>
+                          <Button
+                            onClick={() => handleContinueStory(story.choices.B)}
+                            className="bg-purple-500 hover:bg-purple-600 text-white"
+                            disabled={isGenerating}
+                          >
+                            {story.choices.B}
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {currentStage === 2 && (
+                      <div className="mt-4 text-center">
+                        <div className="text-green-600 font-semibold mb-4">
+                          Story Complete!
+                        </div>
+                        <Button
+                          onClick={resetStory}
+                          className="bg-purple-500 hover:bg-purple-600 text-white"
+                        >
+                          Create New Story
+                        </Button>
+                      </div>
+                    )}
+                    <div className="mt-4 flex justify-between">
+                      <Button
+                        onClick={togglePrompts}
+                        className="bg-blue-500 hover:bg-blue-600 text-white"
+                      >
+                        {showPrompts ? "Hide Prompts" : "Show Prompts"}
+                      </Button>
+                      {currentStage === 1 && (
+                        <Button
+                          onClick={handleGenerateFirstSpeech}
+                          className="bg-green-500 hover:bg-green-600 text-white"
+                          disabled={isFirstAudioLoading}
+                        >
+                          {isFirstAudioLoading
+                            ? "Generating..."
+                            : "Generate First Part Speech"}
+                          <Volume2 className="ml-2 h-5 w-5" />
+                        </Button>
                       )}
-                  </div>
-                ))}
-                <div className="mt-4 text-purple-800 font-semibold">
-                  Stage: {currentStage} / 2
-                </div>
-                {story.choices && currentStage === 1 && (
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800 mb-2">
-                      What happens next?
-                    </h4>
-                    <div className="grid grid-cols-1 gap-2">
-                      <Button
-                        onClick={() => handleContinueStory(story.choices.A)}
-                        className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={isGenerating}
-                      >
-                        {story.choices.A}
-                      </Button>
-                      <Button
-                        onClick={() => handleContinueStory(story.choices.B)}
-                        className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={isGenerating}
-                      >
-                        {story.choices.B}
-                      </Button>
+                      {currentStage === 2 && (
+                        <Button
+                          onClick={handleGenerateSecondSpeech}
+                          className="bg-green-500 hover:bg-green-600 text-white"
+                          disabled={isSecondAudioLoading}
+                        >
+                          {isSecondAudioLoading
+                            ? "Generating..."
+                            : "Generate Second Part Speech"}
+                          <Volume2 className="ml-2 h-5 w-5" />
+                        </Button>
+                      )}
                     </div>
+                    {firstAudioUrl && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-purple-800 mb-2">
+                          First Part Audio:
+                        </h4>
+                        <audio
+                          ref={firstAudioRef}
+                          controls
+                          src={firstAudioUrl}
+                          className="w-full"
+                          onError={(e) => {
+                            console.error("First audio error:", e.target.error);
+                            setFirstAudioError(
+                              `Error loading first audio: ${e.target.error.message}`
+                            );
+                          }}
+                        >
+                          Your browser does not support the audio element.
+                        </audio>
+                        {firstAudioError && (
+                          <p className="text-red-500 mt-2">{firstAudioError}</p>
+                        )}
+                      </div>
+                    )}
+                    {secondAudioUrl && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold text-purple-800 mb-2">
+                          Second Part Audio:
+                        </h4>
+                        <audio
+                          ref={secondAudioRef}
+                          controls
+                          src={secondAudioUrl}
+                          className="w-full"
+                          onError={(e) => {
+                            console.error("Second audio error:", e.target.error);
+                            setSecondAudioError(
+                              `Error loading second audio: ${e.target.error.message}`
+                            );
+                          }}
+                        >
+                          Your browser does not support the audio element.
+                        </audio>
+                        {secondAudioError && (
+                          <p className="text-red-500 mt-2">{secondAudioError}</p>
+                        )}
+                      </div>
+                    )}
+                    {showPrompts && (
+                      <div className="mt-4 p-4 bg-gray-100 rounded-lg">
+                        <h4 className="font-semibold text-purple-800">
+                          Story Generation Prompt:
+                        </h4>
+                        <p className="text-sm text-gray-700">
+                          {prompts.storyPrompt}
+                        </p>
+                        <h4 className="font-semibold text-purple-800 mt-2">
+                          Image Generation Prompt:
+                        </h4>
+                        <p className="text-sm text-gray-700">
+                          {prompts.imagePrompt}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
-                {currentStage === 2 && (
-                  <div className="mt-4 text-center">
-                    <div className="text-green-600 font-semibold mb-4">
-                      Story Complete!
-                    </div>
-                    <Button
-                      onClick={resetStory}
-                      className="bg-purple-500 hover:bg-purple-600 text-white"
-                    >
-                      Create New Story
-                    </Button>
-                  </div>
-                )}
-                <div className="mt-4 flex justify-between">
-                  <Button
-                    onClick={togglePrompts}
-                    className="bg-blue-500 hover:bg-blue-600 text-white"
-                  >
-                    {showPrompts ? "Hide Prompts" : "Show Prompts"}
+                <div className="mt-4 text-center">
+                  <Button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 text-white">
+                    Log out
                   </Button>
-                  {currentStage === 1 && (
-                    <Button
-                      onClick={handleGenerateFirstSpeech}
-                      className="bg-green-500 hover:bg-green-600 text-white"
-                      disabled={isFirstAudioLoading}
-                    >
-                      {isFirstAudioLoading
-                        ? "Generating..."
-                        : "Generate First Part Speech"}
-                      <Volume2 className="ml-2 h-5 w-5" />
-                    </Button>
-                  )}
-                  {currentStage === 2 && (
-                    <Button
-                      onClick={handleGenerateSecondSpeech}
-                      className="bg-green-500 hover:bg-green-600 text-white"
-                      disabled={isSecondAudioLoading}
-                    >
-                      {isSecondAudioLoading
-                        ? "Generating..."
-                        : "Generate Second Part Speech"}
-                      <Volume2 className="ml-2 h-5 w-5" />
-                    </Button>
-                  )}
                 </div>
-                {firstAudioUrl && (
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800 mb-2">
-                      First Part Audio:
-                    </h4>
-                    <audio
-                      ref={firstAudioRef}
-                      controls
-                      src={firstAudioUrl}
-                      className="w-full"
-                      onError={(e) => {
-                        console.error("First audio error:", e.target.error);
-                        setFirstAudioError(
-                          `Error loading first audio: ${e.target.error.message}`
-                        );
-                      }}
-                    >
-                      Your browser does not support the audio element.
-                    </audio>
-                    {firstAudioError && (
-                      <p className="text-red-500 mt-2">{firstAudioError}</p>
-                    )}
-                  </div>
-                )}
-                {secondAudioUrl && (
-                  <div className="mt-4">
-                    <h4 className="font-semibold text-purple-800 mb-2">
-                      Second Part Audio:
-                    </h4>
-                    <audio
-                      ref={secondAudioRef}
-                      controls
-                      src={secondAudioUrl}
-                      className="w-full"
-                      onError={(e) => {
-                        console.error("Second audio error:", e.target.error);
-                        setSecondAudioError(
-                          `Error loading second audio: ${e.target.error.message}`
-                        );
-                      }}
-                    >
-                      Your browser does not support the audio element.
-                    </audio>
-                    {secondAudioError && (
-                      <p className="text-red-500 mt-2">{secondAudioError}</p>
-                    )}
-                  </div>
-                )}
-                {showPrompts && (
-                  <div className="mt-4 p-4 bg-gray-100 rounded-lg">
-                    <h4 className="font-semibold text-purple-800">
-                      Story Generation Prompt:
-                    </h4>
-                    <p className="text-sm text-gray-700">
-                      {prompts.storyPrompt}
-                    </p>
-                    <h4 className="font-semibold text-purple-800 mt-2">
-                      Image Generation Prompt:
-                    </h4>
-                    <p className="text-sm text-gray-700">
-                      {prompts.imagePrompt}
-                    </p>
-                  </div>
-                )}
-              </div>
+              </>
             )}
           </CardContent>
         </Card>

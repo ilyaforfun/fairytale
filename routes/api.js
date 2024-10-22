@@ -4,7 +4,14 @@ const storyGenerator = require('../services/storyGenerator');
 const imageGenerator = require('../services/imageGenerator');
 const textToSpeech = require('../services/textToSpeech');
 
+router.get('/check-auth', (req, res) => {
+    res.json({ isAuthenticated: req.isAuthenticated() });
+});
+
 router.post('/initialize-story', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
     try {
         const { childName, childAge, childInterests, bookType, characterAttributes } = req.body;
 
@@ -27,6 +34,9 @@ router.post('/initialize-story', async (req, res) => {
 });
 
 router.post('/continue-story', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
     try {
         const { choice, childName } = req.body;
 
@@ -47,6 +57,9 @@ router.post('/continue-story', async (req, res) => {
 });
 
 router.post('/generate-image', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
     try {
         const { imagePrompt, isColoringBook } = req.body;
 
@@ -64,6 +77,9 @@ router.post('/generate-image', async (req, res) => {
 });
 
 router.get('/prompts', (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
     const storyPrompt = storyGenerator.getLastPrompt();
     const imagePrompt = imageGenerator.getLastPrompt();
 
@@ -74,6 +90,9 @@ router.get('/prompts', (req, res) => {
 });
 
 router.post('/generate-speech', async (req, res) => {
+    if (!req.isAuthenticated()) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
     try {
         const { text, fileName } = req.body;
 
