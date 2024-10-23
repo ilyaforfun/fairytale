@@ -48,7 +48,7 @@ agentRequireRestartOnSave = false
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm start"
+args = "node server.js"
 waitForPort = 8000
 
 [[workflows.workflow]]
