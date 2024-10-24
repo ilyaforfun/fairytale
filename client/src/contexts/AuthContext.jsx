@@ -11,12 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [authRedirectInProgress, setAuthRedirectInProgress] = useState(false)
   const navigate = useNavigate()
 
-  // Parse hash parameters from URL
-  const parseHashParams = (hash) => {
-    const params = new URLSearchParams(hash.substring(1))
-    return Object.fromEntries(params.entries())
-  }
-
   // Handle OAuth redirect
   useEffect(() => {
     const handleAuthRedirect = async () => {
@@ -24,17 +18,11 @@ export const AuthProvider = ({ children }) => {
         // Check if we have a hash in the URL (OAuth redirect)
         const hash = window.location.hash
         if (hash) {
-          console.log('Detected OAuth redirect with hash')
+          console.log('Detected OAuth redirect with hash', { pathname: window.location.pathname, origin: window.location.origin })
           setAuthRedirectInProgress(true)
+          setLoading(true)
 
-          // Parse hash parameters
-          const params = parseHashParams(hash)
-          console.log('Parsed hash parameters:', { ...params, access_token: '[REDACTED]' })
-
-          // Clear the hash from the URL
-          window.history.replaceState(null, '', window.location.pathname)
-
-          // Get the session
+          // Get the current session
           const { data: { session }, error: sessionError } = await supabase.auth.getSession()
           
           if (sessionError) {
@@ -44,23 +32,36 @@ export const AuthProvider = ({ children }) => {
           }
 
           if (session) {
-            console.log('Successfully retrieved session after OAuth redirect')
+            console.log('Successfully retrieved session:', {
+              provider: session.user?.app_metadata?.provider,
+              email: session.user?.email,
+              id: session.user?.id
+            })
             setUser(session.user)
+            
+            // Clear any existing error
+            setError(null)
+            
+            // Navigate to home page
+            console.log('Redirecting to home page after successful authentication')
             navigate('/', { replace: true })
           } else {
             console.error('No session found after OAuth redirect')
             setError('Authentication failed. Please try again.')
+            navigate('/auth', { replace: true })
           }
         }
       } catch (error) {
         console.error('Error handling OAuth redirect:', error)
         setError('Authentication failed. Please try again.')
+        navigate('/auth', { replace: true })
       } finally {
         setAuthRedirectInProgress(false)
         setLoading(false)
       }
     }
 
+    // Execute handleAuthRedirect when component mounts or URL changes
     handleAuthRedirect()
   }, [navigate])
 
@@ -69,45 +70,74 @@ export const AuthProvider = ({ children }) => {
     console.log('Setting up auth state listener')
     
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('Error getting initial session:', error)
-        setError(error.message)
-      } else {
-        console.log('Initial session retrieved:', session ? 'Session exists' : 'No session')
-        setUser(session?.user ?? null)
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting initial session:', error)
+          setError(error.message)
+        } else {
+          console.log('Initial session retrieved:', {
+            exists: !!session,
+            provider: session?.user?.app_metadata?.provider,
+            email: session?.user?.email
+          })
+          setUser(session?.user ?? null)
+        }
+      } catch (error) {
+        console.error('Error during auth initialization:', error)
+        setError('Failed to initialize authentication')
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
-    })
+    }
 
-    // Listen for changes in auth state
+    initializeAuth()
+
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session ? 'Session exists' : 'No session')
-      setUser(session?.user ?? null)
-      setLoading(false)
+      console.log('Auth state changed:', {
+        event,
+        sessionExists: !!session,
+        provider: session?.user?.app_metadata?.provider
+      })
 
+      setUser(session?.user ?? null)
+      
       // Handle specific auth events
       switch (event) {
         case 'SIGNED_IN':
-          console.log('User signed in:', session?.user?.email)
+          console.log('User signed in successfully:', {
+            email: session?.user?.email,
+            provider: session?.user?.app_metadata?.provider
+          })
           if (!authRedirectInProgress) {
             navigate('/')
           }
           break
+          
         case 'SIGNED_OUT':
           console.log('User signed out')
           navigate('/auth')
           break
+          
         case 'TOKEN_REFRESHED':
           console.log('Session token refreshed')
           break
+          
         case 'USER_UPDATED':
-          console.log('User data updated')
+          console.log('User data updated:', {
+            email: session?.user?.email,
+            provider: session?.user?.app_metadata?.provider
+          })
           break
+          
         case 'USER_DELETED':
           console.log('User account deleted')
           navigate('/auth')
           break
+          
         case 'ERROR':
           console.error('Auth error occurred:', session)
           setError('An authentication error occurred')
@@ -121,55 +151,19 @@ export const AuthProvider = ({ children }) => {
     }
   }, [navigate, authRedirectInProgress])
 
-  const signUp = async (email, password, fullName) => {
-    try {
-      console.log('Attempting to sign up user:', email)
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
-      })
-      
-      if (error) throw error
-      console.log('User signed up successfully:', data)
-      return data
-    } catch (error) {
-      console.error('Sign up error:', error)
-      setError(error.message)
-      throw error
-    }
-  }
-
-  const signIn = async (email, password) => {
-    try {
-      console.log('Attempting to sign in user:', email)
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-      
-      if (error) throw error
-      console.log('User signed in successfully:', data)
-      return data
-    } catch (error) {
-      console.error('Sign in error:', error)
-      setError(error.message)
-      throw error
-    }
-  }
-
   const signInWithGoogle = async () => {
     try {
       console.log('Initiating Google sign-in')
       setLoading(true)
+      setError(null)
+
+      const redirectUrl = `${window.location.origin}/auth`
+      console.log('Using redirect URL:', redirectUrl)
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
@@ -177,15 +171,21 @@ export const AuthProvider = ({ children }) => {
         }
       })
       
-      if (error) throw error
-      console.log('Google sign-in initiated successfully')
+      if (error) {
+        console.error('Error initiating Google sign-in:', error)
+        throw error
+      }
+
+      console.log('Google sign-in initiated successfully:', {
+        provider: data?.provider,
+        url: data?.url
+      })
+      
       return data
     } catch (error) {
       console.error('Google sign-in error:', error)
-      setError(error.message)
+      setError(error.message || 'Failed to sign in with Google')
       throw error
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -196,6 +196,7 @@ export const AuthProvider = ({ children }) => {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       console.log('User signed out successfully')
+      setUser(null)
     } catch (error) {
       console.error('Sign out error:', error)
       setError(error.message)
@@ -214,13 +215,11 @@ export const AuthProvider = ({ children }) => {
       user,
       loading,
       error,
-      signUp,
-      signIn,
       signInWithGoogle,
       signOut,
       clearError
     }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   )
 }
