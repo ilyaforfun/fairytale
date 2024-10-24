@@ -8,7 +8,14 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [authRedirectInProgress, setAuthRedirectInProgress] = useState(false)
   const navigate = useNavigate()
+
+  // Parse hash parameters from URL
+  const parseHashParams = (hash) => {
+    const params = new URLSearchParams(hash.substring(1))
+    return Object.fromEntries(params.entries())
+  }
 
   // Handle OAuth redirect
   useEffect(() => {
@@ -17,24 +24,40 @@ export const AuthProvider = ({ children }) => {
         // Check if we have a hash in the URL (OAuth redirect)
         const hash = window.location.hash
         if (hash) {
-          console.log('Detected OAuth redirect with hash:', hash)
-          const { data: { session }, error } = await supabase.auth.getSession()
+          console.log('Detected OAuth redirect with hash')
+          setAuthRedirectInProgress(true)
+
+          // Parse hash parameters
+          const params = parseHashParams(hash)
+          console.log('Parsed hash parameters:', { ...params, access_token: '[REDACTED]' })
+
+          // Clear the hash from the URL
+          window.history.replaceState(null, '', window.location.pathname)
+
+          // Get the session
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession()
           
-          if (error) {
-            console.error('Error getting session after OAuth redirect:', error)
+          if (sessionError) {
+            console.error('Error getting session after OAuth redirect:', sessionError)
             setError('Failed to complete authentication. Please try again.')
-            throw error
+            throw sessionError
           }
 
           if (session) {
             console.log('Successfully retrieved session after OAuth redirect')
             setUser(session.user)
-            navigate('/')
+            navigate('/', { replace: true })
+          } else {
+            console.error('No session found after OAuth redirect')
+            setError('Authentication failed. Please try again.')
           }
         }
       } catch (error) {
         console.error('Error handling OAuth redirect:', error)
         setError('Authentication failed. Please try again.')
+      } finally {
+        setAuthRedirectInProgress(false)
+        setLoading(false)
       }
     }
 
@@ -67,7 +90,9 @@ export const AuthProvider = ({ children }) => {
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in:', session?.user?.email)
-          navigate('/')
+          if (!authRedirectInProgress) {
+            navigate('/')
+          }
           break
         case 'SIGNED_OUT':
           console.log('User signed out')
@@ -94,7 +119,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Cleaning up auth state listener')
       subscription.unsubscribe()
     }
-  }, [navigate])
+  }, [navigate, authRedirectInProgress])
 
   const signUp = async (email, password, fullName) => {
     try {
@@ -140,10 +165,11 @@ export const AuthProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     try {
       console.log('Initiating Google sign-in')
+      setLoading(true)
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: window.location.origin,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
@@ -152,18 +178,21 @@ export const AuthProvider = ({ children }) => {
       })
       
       if (error) throw error
-      console.log('Google sign-in initiated:', data)
+      console.log('Google sign-in initiated successfully')
       return data
     } catch (error) {
       console.error('Google sign-in error:', error)
       setError(error.message)
       throw error
+    } finally {
+      setLoading(false)
     }
   }
 
   const signOut = async () => {
     try {
       console.log('Attempting to sign out user')
+      setLoading(true)
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       console.log('User signed out successfully')
@@ -171,6 +200,8 @@ export const AuthProvider = ({ children }) => {
       console.error('Sign out error:', error)
       setError(error.message)
       throw error
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -189,7 +220,7 @@ export const AuthProvider = ({ children }) => {
       signOut,
       clearError
     }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   )
 }
