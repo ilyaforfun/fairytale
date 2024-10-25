@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2, LogOut } from 'lucide-react'
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
 import WaitingState from './components/WaitingState'
 import CharacterCreator from './components/CharacterCreator'
-import { useAuth } from './contexts/AuthContext'
+import LogoutButton from './components/LogoutButton'
 
 export default function FairytalePage() {
-  const { signOut } = useAuth()
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [theme, setTheme] = useState("");
@@ -49,33 +48,15 @@ export default function FairytalePage() {
     { value: "coloring", label: "Coloring Book" },
   ];
 
-  const handleLogout = async () => {
-    try {
-      await signOut()
-    } catch (error) {
-      setError('Failed to log out')
-    }
-  }
-
-  // ... rest of the component code remains the same until the return statement ...
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="absolute top-4 right-4">
-        <Button
-          onClick={handleLogout}
-          variant="outline"
-          className="flex items-center gap-2 bg-white hover:bg-gray-100"
-        >
-          <LogOut className="h-4 w-4" />
-          Logout
-        </Button>
+        <LogoutButton />
       </div>
       {(isGenerating || isImageGenerating) && <WaitingState />}
       <div className="max-w-3xl mx-auto">
-        {/* Rest of the existing JSX remains the same */}
         <Card className="shadow-xl bg-white">
-          {/* ... existing card content ... */}
+          {/* ... rest of the existing card content ... */}
         </Card>
       </div>
     </div>
