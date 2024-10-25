@@ -151,6 +151,27 @@ export const AuthProvider = ({ children }) => {
     }
   }, [navigate, authRedirectInProgress])
 
+  const signIn = async (email, password) => {
+    try {
+      console.log('Attempting to sign in user with email')
+      setLoading(true)
+      setError(null)
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      if (error) throw error
+      setUser(data.user)
+      return data
+    } catch (error) {
+      console.error('Sign in error:', error)
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signInWithGoogle = async () => {
     try {
       console.log('Initiating Google sign-in')
@@ -215,6 +236,7 @@ export const AuthProvider = ({ children }) => {
       user,
       loading,
       error,
+      signIn,
       signInWithGoogle,
       signOut,
       clearError
