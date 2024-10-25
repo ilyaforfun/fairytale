@@ -48,6 +48,14 @@ export default function FairytalePage() {
     { value: "coloring", label: "Coloring Book" },
   ];
 
+  const handleCharacterAttributesChange = (attributes) => {
+    setCharacterAttributes(attributes);
+  };
+
+  const handleAllAttributesSelected = (isSelected) => {
+    setAllAttributesSelected(isSelected);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="absolute top-4 right-4">
@@ -56,7 +64,99 @@ export default function FairytalePage() {
       {(isGenerating || isImageGenerating) && <WaitingState />}
       <div className="max-w-3xl mx-auto">
         <Card className="shadow-xl bg-white">
-          {/* ... rest of the existing card content ... */}
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-bold text-purple-800">
+              Magical Fairytale Generator
+            </CardTitle>
+            <CardDescription className="text-lg text-purple-600">
+              Create your own magical story
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="childName">Child's Name</Label>
+                <Input
+                  id="childName"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter the child's name"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="childAge">Child's Age</Label>
+                <Input
+                  id="childAge"
+                  type="number"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="Enter the child's age"
+                  className="mt-1"
+                  min="1"
+                  max="12"
+                />
+              </div>
+              <CharacterCreator 
+                onAttributesChange={handleCharacterAttributesChange}
+                onAllAttributesSelected={handleAllAttributesSelected}
+              />
+              <div>
+                <Label>Choose a Theme</Label>
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  {themes.map((themeOption) => {
+                    const Icon = themeOption.icon;
+                    return (
+                      <Button
+                        key={themeOption.value}
+                        variant={theme === themeOption.value ? "default" : "outline"}
+                        className={`flex items-center justify-center gap-2 ${
+                          theme === themeOption.value
+                            ? "bg-purple-600 hover:bg-purple-700"
+                            : "hover:bg-purple-100"
+                        }`}
+                        onClick={() => setTheme(themeOption.value)}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {themeOption.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <Label>Book Type</Label>
+                <div className="grid grid-cols-2 gap-4 mt-2">
+                  {bookTypes.map((type) => (
+                    <Button
+                      key={type.value}
+                      variant={bookType === type.value ? "default" : "outline"}
+                      className={`flex items-center justify-center gap-2 ${
+                        bookType === type.value
+                          ? "bg-purple-600 hover:bg-purple-700"
+                          : "hover:bg-purple-100"
+                      }`}
+                      onClick={() => setBookType(type.value)}
+                    >
+                      {type.value === "pictured" ? (
+                        <BookOpen className="h-4 w-4" />
+                      ) : (
+                        <Palette className="h-4 w-4" />
+                      )}
+                      {type.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              <Button
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white mt-6"
+                disabled={!name || !age || !theme || !allAttributesSelected}
+              >
+                <Wand2 className="h-4 w-4 mr-2" />
+                Generate Fairytale
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>

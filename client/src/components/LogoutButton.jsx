@@ -21,7 +21,7 @@ export default function LogoutButton() {
     <Button
       onClick={handleLogout}
       variant="outline"
-      className="flex items-center gap-2 bg-white hover:bg-gray-100"
+      className="flex items-center gap-2 bg-white text-purple-600 hover:bg-purple-100 hover:text-purple-700 border-purple-300"
     >
       <LogOut className="h-4 w-4" />
       Logout
