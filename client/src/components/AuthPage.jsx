@@ -58,8 +58,7 @@ export default function AuthPage() {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true)
     try {
-      const redirectUrl = `${window.location.origin}/auth`
-      await signInWithGoogle(redirectUrl)
+      await signInWithGoogle()
       // No need to navigate here as Supabase will handle the redirect
     } catch (error) {
       setError(error.message)
@@ -82,19 +81,9 @@ export default function AuthPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-purple-100/50 p-1 rounded-xl">
-              <TabsTrigger 
-                value="signin" 
-                className="data-[state=active]:bg-white data-[state=active]:text-purple-700 data-[state=active]:shadow-sm rounded-lg px-3 py-2 text-purple-600 transition-all"
-              >
-                Sign In
-              </TabsTrigger>
-              <TabsTrigger 
-                value="signup"
-                className="data-[state=active]:bg-white data-[state=active]:text-purple-700 data-[state=active]:shadow-sm rounded-lg px-3 py-2 text-purple-600 transition-all"
-              >
-                Sign Up
-              </TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="signin">Sign In</TabsTrigger>
+              <TabsTrigger value="signup">Sign Up</TabsTrigger>
             </TabsList>
             <TabsContent value="signin">
               <form onSubmit={handleSignIn} className="space-y-4">
@@ -108,7 +97,7 @@ export default function AuthPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       required
-                      className="pl-10 border-2 border-purple-300 focus:border-purple-500 rounded-xl"
+                      className="pl-10"
                     />
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-500 h-5 w-5" />
                   </div>
@@ -123,7 +112,7 @@ export default function AuthPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
                       required
-                      className="pl-10 border-2 border-purple-300 focus:border-purple-500 rounded-xl"
+                      className="pl-10"
                     />
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-500 h-5 w-5" />
                   </div>
@@ -136,7 +125,7 @@ export default function AuthPage() {
                 )}
                 <Button 
                   type="submit" 
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -156,7 +145,7 @@ export default function AuthPage() {
                   <Button
                     onClick={handleGoogleSignIn}
                     type="button"
-                    className="w-full bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 rounded-xl"
+                    className="w-full bg-white hover:bg-gray-100 text-gray-900 border border-gray-300"
                     disabled={isGoogleLoading}
                   >
                     {isGoogleLoading ? (
@@ -193,7 +182,7 @@ export default function AuthPage() {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your full name"
                       required
-                      className="pl-10 border-2 border-purple-300 focus:border-purple-500 rounded-xl"
+                      className="pl-10"
                     />
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-500 h-5 w-5" />
                   </div>
@@ -208,7 +197,7 @@ export default function AuthPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       required
-                      className="pl-10 border-2 border-purple-300 focus:border-purple-500 rounded-xl"
+                      className="pl-10"
                     />
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-500 h-5 w-5" />
                   </div>
@@ -223,7 +212,7 @@ export default function AuthPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Create a password"
                       required
-                      className="pl-10 border-2 border-purple-300 focus:border-purple-500 rounded-xl"
+                      className="pl-10"
                     />
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-500 h-5 w-5" />
                   </div>
@@ -238,7 +227,7 @@ export default function AuthPage() {
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Confirm your password"
                       required
-                      className="pl-10 border-2 border-purple-300 focus:border-purple-500 rounded-xl"
+                      className="pl-10"
                     />
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-500 h-5 w-5" />
                   </div>
@@ -251,7 +240,7 @@ export default function AuthPage() {
                 )}
                 <Button 
                   type="submit" 
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -271,7 +260,7 @@ export default function AuthPage() {
                   <Button
                     onClick={handleGoogleSignIn}
                     type="button"
-                    className="w-full bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 rounded-xl"
+                    className="w-full bg-white hover:bg-gray-100 text-gray-900 border border-gray-300"
                     disabled={isGoogleLoading}
                   >
                     {isGoogleLoading ? (
