@@ -19,26 +19,6 @@ args = "Start Fairytale Generator Server"
 task = "workflow.run"
 args = "React Dev Server"
 
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Test Story and Image Generation"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Test Image Generation"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Deploy Fairytale Generator"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Check Deploy Status"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Test Story Generation"
-
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
 author = "agent"
@@ -62,63 +42,6 @@ agentRequireRestartOnSave = false
 task = "shell.exec"
 args = "cd client && npm run dev -- --host 0.0.0.0"
 waitForPort = 5173
-
-[[workflows.workflow]]
-name = "Test Story and Image Generation"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node test_story_generation.js"
-
-[[workflows.workflow]]
-name = "Test Image Generation"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node -e \"const { generateImage } = require('./services/imageGenerator'); async function test() { try { const imageUrl = await generateImage('Alice and the Friendly Dragon'); console.log('Image URL:', imageUrl); } catch (error) { console.error('Error:', error); } } test();\""
-
-[[workflows.workflow]]
-name = "Deploy Fairytale Generator"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run deploy"
-waitForPort = 8000
-
-[[workflows.workflow]]
-name = "Check Deploy Status"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run deploy"
-waitForPort = 8000
-
-[[workflows.workflow]]
-name = "Test Story Generation"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node -e \"const { initializeStory } = require('./services/storyGenerator'); async function test() { try { const story = await initializeStory('Alice', 7, 'dragons', 'pictured', { Gender: 'Girl', 'Hair Style': 'Long', 'Hair Color': 'Blonde', 'Skin Color': 'Light', 'Eye Color': 'Blue' }); console.log('Story:', JSON.stringify(story, null, 2)); } catch (error) { console.error('Error:', error); } } test();\""
 
 [deployment]
 run = ["sh", "-c", "cd client && npm run build && cd .. && node server.js"]
