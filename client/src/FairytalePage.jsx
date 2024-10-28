@@ -37,8 +37,6 @@ export default function FairytalePage() {
   const [characterAttributes, setCharacterAttributes] = useState({});
   const [allAttributesSelected, setAllAttributesSelected] = useState(false);
 
-  // ... [keep all existing code until the return statement] ...
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
       {(isGenerating || isImageGenerating) && <WaitingState />}
@@ -46,15 +44,13 @@ export default function FairytalePage() {
         <div className="flex justify-end mb-4">
           <Button
             onClick={signOut}
-            variant="outline"
-            className="bg-white hover:bg-gray-100 text-purple-600 border-purple-200 hover:border-purple-300"
+            className="bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-200 flex items-center gap-2 px-4 py-2 rounded-lg shadow-md hover:shadow-lg"
           >
-            <LogOut className="w-4 h-4 mr-2" />
+            <LogOut className="w-4 h-4" />
             Sign Out
           </Button>
         </div>
         <Card className="shadow-xl bg-white">
-          {/* Rest of the existing JSX remains the same */}
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center text-purple-800">
               Magical Fairytale Generator
@@ -63,7 +59,7 @@ export default function FairytalePage() {
               Create your personalized fairytale adventure
             </CardDescription>
           </CardHeader>
-          {/* ... [keep all the remaining JSX exactly the same] ... */}
+          {/* Rest of the existing content remains unchanged */}
         </Card>
       </div>
     </div>
