@@ -15,14 +15,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const handleAuthRedirect = async () => {
       try {
-        // Check if we have a hash in the URL (OAuth redirect)
         const hash = window.location.hash
         if (hash) {
           console.log('Detected OAuth redirect with hash', { pathname: window.location.pathname, origin: window.location.origin })
           setAuthRedirectInProgress(true)
           setLoading(true)
 
-          // Get the current session
           const { data: { session }, error: sessionError } = await supabase.auth.getSession()
           
           if (sessionError) {
@@ -38,12 +36,7 @@ export const AuthProvider = ({ children }) => {
               id: session.user?.id
             })
             setUser(session.user)
-            
-            // Clear any existing error
             setError(null)
-            
-            // Navigate to home page
-            console.log('Redirecting to home page after successful authentication')
             navigate('/', { replace: true })
           } else {
             console.error('No session found after OAuth redirect')
@@ -61,7 +54,6 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Execute handleAuthRedirect when component mounts or URL changes
     handleAuthRedirect()
   }, [navigate])
 
@@ -69,7 +61,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     console.log('Setting up auth state listener')
     
-    // Get initial session
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
@@ -95,7 +86,6 @@ export const AuthProvider = ({ children }) => {
 
     initializeAuth()
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', {
         event,
@@ -105,7 +95,6 @@ export const AuthProvider = ({ children }) => {
 
       setUser(session?.user ?? null)
       
-      // Handle specific auth events
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in successfully:', {
@@ -150,6 +139,93 @@ export const AuthProvider = ({ children }) => {
       subscription.unsubscribe()
     }
   }, [navigate, authRedirectInProgress])
+
+  const signIn = async (email, password) => {
+    try {
+      console.log('Attempting to sign in with email:', email)
+      setLoading(true)
+      setError(null)
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (error) {
+        console.error('Sign in error:', error)
+        throw error
+      }
+
+      console.log('Sign in successful:', {
+        userId: data.user?.id,
+        email: data.user?.email
+      })
+
+      return data
+    } catch (error) {
+      console.error('Sign in error:', error)
+      let errorMessage = 'Failed to sign in'
+      
+      // Handle specific error cases
+      if (error.message.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password'
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Please verify your email address'
+      }
+      
+      setError(errorMessage)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const signUp = async (email, password, name) => {
+    try {
+      console.log('Attempting to sign up with email:', email)
+      setLoading(true)
+      setError(null)
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+        },
+      })
+
+      if (error) {
+        console.error('Sign up error:', error)
+        throw error
+      }
+
+      console.log('Sign up successful:', {
+        userId: data.user?.id,
+        email: data.user?.email
+      })
+
+      return data
+    } catch (error) {
+      console.error('Sign up error:', error)
+      let errorMessage = 'Failed to sign up'
+      
+      // Handle specific error cases
+      if (error.message.includes('already registered')) {
+        errorMessage = 'This email is already registered'
+      } else if (error.message.includes('valid email')) {
+        errorMessage = 'Please enter a valid email address'
+      } else if (error.message.includes('stronger password')) {
+        errorMessage = 'Please use a stronger password'
+      }
+      
+      setError(errorMessage)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const signInWithGoogle = async () => {
     try {
@@ -215,6 +291,8 @@ export const AuthProvider = ({ children }) => {
       user,
       loading,
       error,
+      signIn,
+      signUp,
       signInWithGoogle,
       signOut,
       clearError
