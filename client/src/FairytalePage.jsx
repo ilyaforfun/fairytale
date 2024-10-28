@@ -12,7 +12,7 @@ export default function FairytalePage() {
   const { signOut } = useAuth()
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
-  const [theme, setTheme] = useState("");
+  const [interests, setInterests] = useState("");
   const [bookType, setBookType] = useState("pictured");
   const [loading, setLoading] = useState(false);
   const [story, setStory] = useState(null);
@@ -37,6 +37,24 @@ export default function FairytalePage() {
   const [characterAttributes, setCharacterAttributes] = useState({});
   const [allAttributesSelected, setAllAttributesSelected] = useState(false);
 
+  const handleCharacterAttributes = (attributes) => {
+    setCharacterAttributes(attributes);
+  };
+
+  const handleAllAttributesSelected = (isComplete) => {
+    setAllAttributesSelected(isComplete);
+  };
+
+  const handleGenerateFairytale = async () => {
+    if (!name || !age || !interests || !allAttributesSelected) {
+      setError("Please fill in all fields and complete character creation");
+      return;
+    }
+    setIsGenerating(true);
+    // API call logic would go here
+    setIsGenerating(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
       {(isGenerating || isImageGenerating) && <WaitingState />}
@@ -59,7 +77,92 @@ export default function FairytalePage() {
               Create your personalized fairytale adventure
             </CardDescription>
           </CardHeader>
-          {/* Rest of the existing content remains unchanged */}
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="childName">Child's Name</Label>
+                <Input
+                  id="childName"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter child's name"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="childAge">Child's Age</Label>
+                <Input
+                  id="childAge"
+                  type="number"
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="Enter child's age"
+                  min="1"
+                  max="12"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="interests">Child's Interests (comma-separated)</Label>
+                <Input
+                  id="interests"
+                  value={interests}
+                  onChange={(e) => setInterests(e.target.value)}
+                  placeholder="e.g., dragons, princesses, space"
+                  className="mt-1"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Book Type</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    type="button"
+                    variant={bookType === "pictured" ? "default" : "outline"}
+                    onClick={() => setBookType("pictured")}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    Picture Book
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={bookType === "coloring" ? "default" : "outline"}
+                    onClick={() => setBookType("coloring")}
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <Palette className="w-4 h-4" />
+                    Coloring Book
+                  </Button>
+                </div>
+              </div>
+              <CharacterCreator
+                onAttributesChange={handleCharacterAttributes}
+                onAllAttributesSelected={handleAllAttributesSelected}
+              />
+              {error && (
+                <div className="text-red-600 text-sm mt-2">
+                  {error}
+                </div>
+              )}
+              <Button
+                onClick={handleGenerateFairytale}
+                disabled={!name || !age || !interests || !allAttributesSelected || isGenerating}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white mt-6"
+              >
+                {isGenerating ? (
+                  <>
+                    <Wand2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating Your Fairytale...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2 h-4 w-4" />
+                    Generate Fairytale
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
         </Card>
       </div>
     </div>
