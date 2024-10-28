@@ -19,6 +19,18 @@ args = "Start Fairytale Generator Server"
 task = "workflow.run"
 args = "React Dev Server"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Test Supabase"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Execute SQL Migration"
+
 [[workflows.workflow]]
 name = "Start Fairytale Generator Server"
 author = "agent"
@@ -42,6 +54,40 @@ agentRequireRestartOnSave = false
 task = "shell.exec"
 args = "cd client && npm run dev -- --host 0.0.0.0"
 waitForPort = 5173
+
+[[workflows.workflow]]
+name = "Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+waitForPort = 8000
+
+[[workflows.workflow]]
+name = "Test Supabase"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node test_supabase_setup.js"
+
+[[workflows.workflow]]
+name = "Execute SQL Migration"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "psql $DATABASE_URL -f supabase/migrations/stories_table.sql"
 
 [deployment]
 run = ["sh", "-c", "cd client && npm run build && cd .. && node server.js"]
