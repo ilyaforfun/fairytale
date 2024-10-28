@@ -1,25 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  BookOpen,
-  Wand2,
-  Palette,
-  Send,
-  Crown,
-  Rocket,
-  Waves,
-  Leaf,
-  Volume2,
-} from "lucide-react";
+import React, { useState, useEffect, useRef } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
+import WaitingState from './components/WaitingState'
+import CharacterCreator from './components/CharacterCreator'
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -43,6 +29,11 @@ export default function FairytalePage() {
   const firstAudioRef = useRef(null);
   const secondAudioRef = useRef(null);
   const [userChoice, setUserChoice] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isImageGenerating, setIsImageGenerating] = useState(false);
+  const [showCharacterCreator, setShowCharacterCreator] = useState(false);
+  const [characterAttributes, setCharacterAttributes] = useState({});
+  const [allAttributesSelected, setAllAttributesSelected] = useState(false);
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -58,143 +49,125 @@ export default function FairytalePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    if (!showCharacterCreator) {
+      setShowCharacterCreator(true);
+      return;
+    }
+
+    if (!allAttributesSelected) {
+      setError("Please select all character attributes before generating the story.");
+      return;
+    }
+
     setError(null);
+    setIsGenerating(true);
     setStory(null);
     setImageUrl(null);
     setSecondImageUrl(null);
 
-    console.log("Form submitted with:", { name, age, theme, bookType });
-
     try {
-      const response = await fetch("/api/initialize-story", {
-        method: "POST",
+      const response = await fetch('/api/initialize-story', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          childName: name,
-          childAge: age,
-          childInterests: theme,
+        body: JSON.stringify({ 
+          childName: name, 
+          childAge: age, 
+          childInterests: theme, 
           bookType,
+          characterAttributes 
         }),
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || "Failed to generate story");
+        throw new Error('Failed to generate story');
       }
 
       const data = await response.json();
-      console.log("Received story data:", data);
-      setStory({
-        title: data.title,
-        content: data.content,
-        choices: data.choices,
-        imagePrompt: data.imagePrompt,
-      });
+      setStory(data);
       setCurrentStage(1);
-      fetchPrompts();
-      generateImage(data.imagePrompt);
+
+      setIsImageGenerating(true);
+      const imageResponse = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imagePrompt: data.imagePrompt, isColoringBook: bookType === 'coloring' }),
+      });
+
+      if (!imageResponse.ok) {
+        throw new Error('Failed to generate image');
+      }
+
+      const imageData = await imageResponse.json();
+      setImageUrl(imageData.imageUrl);
+      setIsImageGenerating(false);
+
+      const promptsResponse = await fetch('/api/prompts');
+      const promptsData = await promptsResponse.json();
+      setPrompts(promptsData);
     } catch (error) {
-      console.error("Error generating story:", error);
-      setError(
-        error.message ||
-          "An error occurred while generating the story. Please try again.",
-      );
+      console.error('Error:', error);
+      setError('Oops! Something went wrong. Please try again.');
     } finally {
-      setLoading(false);
+      setIsGenerating(false);
     }
   };
 
   const handleContinueStory = async (choice) => {
-    setLoading(true);
+    setIsGenerating(true);
     setError(null);
     setUserChoice(choice);
 
     try {
-      const response = await fetch("/api/continue-story", {
-        method: "POST",
+      const response = await fetch('/api/continue-story', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ choice, childName: name }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || "Failed to continue story");
+        throw new Error('Failed to continue story');
       }
 
       const data = await response.json();
-      console.log("Received continuation data:", data);
-      setStory((prevStory) => ({
+      setStory(prevStory => ({
         ...prevStory,
-        content: prevStory.content + "\n\n" + choice + "\n\n" + data.content,
+        content: prevStory.content + '\n\n' + choice + '\n\n' + data.content,
         choices: null,
         imagePrompt: data.imagePrompt,
       }));
       setCurrentStage(2);
-      fetchPrompts();
-      generateImage(data.imagePrompt, true);
-    } catch (error) {
-      console.error("Error continuing story:", error);
-      setError(
-        error.message ||
-          "An error occurred while continuing the story. Please try again.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const generateImage = async (imagePrompt, isSecondImage = false) => {
-    try {
-      console.log("Generating image with prompt:", imagePrompt);
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
+      setIsImageGenerating(true);
+      const imageResponse = await fetch('/api/generate-image', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          imagePrompt,
-          isColoringBook: bookType === "coloring",
-        }),
+        body: JSON.stringify({ imagePrompt: data.imagePrompt, isColoringBook: bookType === 'coloring' }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || "Failed to generate image");
+      if (!imageResponse.ok) {
+        throw new Error('Failed to generate second image');
       }
 
-      const data = await response.json();
-      console.log("Received image URL:", data.imageUrl);
-      if (isSecondImage) {
-        setSecondImageUrl(data.imageUrl);
-      } else {
-        setImageUrl(data.imageUrl);
-      }
-    } catch (error) {
-      console.error("Error generating image:", error);
-      setError(
-        error.message ||
-          "An error occurred while generating the image. Please try again.",
-      );
-    }
-  };
+      const imageData = await imageResponse.json();
+      setSecondImageUrl(imageData.imageUrl);
+      setIsImageGenerating(false);
 
-  const fetchPrompts = async () => {
-    try {
-      const response = await fetch("/api/prompts");
-      if (!response.ok) {
-        throw new Error("Failed to fetch prompts");
-      }
-      const data = await response.json();
-      setPrompts(data);
+      const promptsResponse = await fetch('/api/prompts');
+      const promptsData = await promptsResponse.json();
+      setPrompts(promptsData);
     } catch (error) {
-      console.error("Error fetching prompts:", error);
+      console.error('Error:', error);
+      setError('Oops! Something went wrong. Please try again.');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -220,6 +193,8 @@ export default function FairytalePage() {
     setSecondImageUrl(null);
     setFirstAudioUrl(null);
     setSecondAudioUrl(null);
+    setShowCharacterCreator(false);
+    setCharacterAttributes({});
   };
 
   const handleGenerateFirstSpeech = async () => {
@@ -248,7 +223,7 @@ export default function FairytalePage() {
     } catch (error) {
       console.error("Error generating first speech:", error);
       setFirstAudioError(
-        "Failed to generate speech for the first part. Please try again.",
+        "Failed to generate speech for the first part. Please try again."
       );
     } finally {
       setIsFirstAudioLoading(false);
@@ -261,19 +236,15 @@ export default function FairytalePage() {
     setIsSecondAudioLoading(true);
     setSecondAudioError(null);
     try {
-      // Split the content by double newlines
       const contentParts = story.content.split("\n\n");
-
-      // Find the index of the user's choice
       const choiceIndex = contentParts.findIndex(
-        (part) => part.trim() === userChoice.trim(),
+        (part) => part.trim() === userChoice.trim()
       );
 
       if (choiceIndex === -1) {
         throw new Error("Unable to find user choice in story content");
       }
 
-      // Get all content after the choice
       const secondPartContent = contentParts
         .slice(choiceIndex + 1)
         .join("\n\n");
@@ -298,7 +269,7 @@ export default function FairytalePage() {
     } catch (error) {
       console.error("Error generating second speech:", error);
       setSecondAudioError(
-        "Failed to generate speech for the second part. Please try again.",
+        "Failed to generate speech for the second part. Please try again."
       );
     } finally {
       setIsSecondAudioLoading(false);
@@ -323,6 +294,7 @@ export default function FairytalePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
+      {(isGenerating || isImageGenerating) && <WaitingState />}
       <div className="max-w-3xl mx-auto">
         <Card className="shadow-xl bg-white">
           <CardHeader>
@@ -336,94 +308,103 @@ export default function FairytalePage() {
           <CardContent>
             {!story && (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Child's Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Enter the child's name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="border-2 border-purple-300 focus:border-purple-500"
+                {!showCharacterCreator ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Child's Name</Label>
+                      <Input
+                        id="name"
+                        placeholder="Enter the child's name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                        className="border-2 border-purple-300 focus:border-purple-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="age">Child's Age</Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        placeholder="Enter the child's age"
+                        value={age}
+                        onChange={(e) => setAge(e.target.value)}
+                        required
+                        min="1"
+                        max="12"
+                        className="border-2 border-purple-300 focus:border-purple-500"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Fairytale Theme</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        {themes.map((item) => {
+                          const Icon = item.icon;
+                          const isSelected = theme === item.value;
+                          return (
+                            <Button
+                              key={item.value}
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 ${
+                                isSelected
+                                  ? "bg-purple-600 text-white shadow-lg scale-105 border-4 border-yellow-400"
+                                  : "hover:bg-purple-100 hover:scale-102"
+                              }`}
+                              onClick={() => setTheme(item.value)}
+                            >
+                              <Icon
+                                className={`h-8 w-8 mb-2 ${isSelected ? "text-yellow-400" : "text-purple-600"}`}
+                              />
+                              <span className="text-sm font-medium">
+                                {item.label}
+                              </span>
+                              {isSelected && (
+                                <span className="absolute top-0 right-0 bg-yellow-400 text-purple-600 px-2 py-1 text-xs font-bold rounded-bl-lg">
+                                  Selected
+                                </span>
+                              )}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Book Type</Label>
+                      <div className="grid grid-cols-2 gap-4">
+                        {bookTypes.map((item) => {
+                          const isSelected = bookType === item.value;
+                          return (
+                            <Button
+                              key={item.value}
+                              type="button"
+                              variant={isSelected ? "default" : "outline"}
+                              className={`h-auto flex items-center justify-center p-4 transition-all duration-200 ${
+                                isSelected
+                                  ? "bg-purple-600 text-white font-bold"
+                                  : "bg-white text-purple-600 hover:bg-purple-100"
+                              }`}
+                              onClick={() => setBookType(item.value)}
+                            >
+                              <span className="text-sm">{item.label}</span>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <CharacterCreator 
+                    onAttributesChange={setCharacterAttributes}
+                    onAllAttributesSelected={setAllAttributesSelected}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="age">Child's Age</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    placeholder="Enter the child's age"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    required
-                    min="1"
-                    max="12"
-                    className="border-2 border-purple-300 focus:border-purple-500"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Fairytale Theme</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {themes.map((item) => {
-                      const Icon = item.icon;
-                      const isSelected = theme === item.value;
-                      return (
-                        <Button
-                          key={item.value}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 ${
-                            isSelected
-                              ? "bg-purple-600 text-white shadow-lg scale-105 border-4 border-yellow-400"
-                              : "hover:bg-purple-100 hover:scale-102"
-                          }`}
-                          onClick={() => setTheme(item.value)}
-                        >
-                          <Icon
-                            className={`h-8 w-8 mb-2 ${isSelected ? "text-yellow-400" : "text-purple-600"}`}
-                          />
-                          <span className="text-sm font-medium">
-                            {item.label}
-                          </span>
-                          {isSelected && (
-                            <span className="absolute top-0 right-0 bg-yellow-400 text-purple-600 px-2 py-1 text-xs font-bold rounded-bl-lg">
-                              Selected
-                            </span>
-                          )}
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Book Type</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {bookTypes.map((item) => {
-                      const isSelected = bookType === item.value;
-                      return (
-                        <Button
-                          key={item.value}
-                          type="button"
-                          variant={isSelected ? "default" : "outline"}
-                          className={`h-auto flex items-center justify-center p-4 transition-all duration-200 ${
-                            isSelected
-                              ? "bg-purple-600 text-white font-bold"
-                              : "bg-white text-purple-600 hover:bg-purple-100"
-                          }`}
-                          onClick={() => setBookType(item.value)}
-                        >
-                          <span className="text-sm">{item.label}</span>
-                        </Button>
-                      );
-                    })}
-                  </div>
-                </div>
+                )}
                 <Button
                   type="submit"
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  disabled={loading}
+                  disabled={isGenerating || (showCharacterCreator && !allAttributesSelected)}
                 >
-                  {loading ? "Generating..." : "Generate Fairytale"}
+                  {isGenerating ? "Generating..." : showCharacterCreator ? "Generate Fairytale" : "Next: Create Character"}
                   <Wand2 className="ml-2 h-5 w-5" />
                 </Button>
               </form>
@@ -476,14 +457,14 @@ export default function FairytalePage() {
                       <Button
                         onClick={() => handleContinueStory(story.choices.A)}
                         className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={loading}
+                        disabled={isGenerating}
                       >
                         {story.choices.A}
                       </Button>
                       <Button
                         onClick={() => handleContinueStory(story.choices.B)}
                         className="bg-purple-500 hover:bg-purple-600 text-white"
-                        disabled={loading}
+                        disabled={isGenerating}
                       >
                         {story.choices.B}
                       </Button>
@@ -548,7 +529,7 @@ export default function FairytalePage() {
                       onError={(e) => {
                         console.error("First audio error:", e.target.error);
                         setFirstAudioError(
-                          `Error loading first audio: ${e.target.error.message}`,
+                          `Error loading first audio: ${e.target.error.message}`
                         );
                       }}
                     >
@@ -572,7 +553,7 @@ export default function FairytalePage() {
                       onError={(e) => {
                         console.error("Second audio error:", e.target.error);
                         setSecondAudioError(
-                          `Error loading second audio: ${e.target.error.message}`,
+                          `Error loading second audio: ${e.target.error.message}`
                         );
                       }}
                     >
