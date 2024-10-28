@@ -15,14 +15,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const handleAuthRedirect = async () => {
       try {
-        // Check if we have a hash in the URL (OAuth redirect)
         const hash = window.location.hash
         if (hash) {
           console.log('Detected OAuth redirect with hash', { pathname: window.location.pathname, origin: window.location.origin })
           setAuthRedirectInProgress(true)
           setLoading(true)
 
-          // Get the current session
           const { data: { session }, error: sessionError } = await supabase.auth.getSession()
           
           if (sessionError) {
@@ -38,12 +36,7 @@ export const AuthProvider = ({ children }) => {
               id: session.user?.id
             })
             setUser(session.user)
-            
-            // Clear any existing error
             setError(null)
-            
-            // Navigate to home page
-            console.log('Redirecting to home page after successful authentication')
             navigate('/', { replace: true })
           } else {
             console.error('No session found after OAuth redirect')
@@ -61,7 +54,6 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    // Execute handleAuthRedirect when component mounts or URL changes
     handleAuthRedirect()
   }, [navigate])
 
@@ -69,7 +61,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     console.log('Setting up auth state listener')
     
-    // Get initial session
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
@@ -95,7 +86,6 @@ export const AuthProvider = ({ children }) => {
 
     initializeAuth()
 
-    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', {
         event,
@@ -105,7 +95,6 @@ export const AuthProvider = ({ children }) => {
 
       setUser(session?.user ?? null)
       
-      // Handle specific auth events
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in successfully:', {
@@ -151,6 +140,66 @@ export const AuthProvider = ({ children }) => {
     }
   }, [navigate, authRedirectInProgress])
 
+  // Add signIn function
+  const signIn = async (email, password) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+      
+      if (error) throw error
+      
+      console.log('Sign in successful:', {
+        email: data.user?.email,
+        id: data.user?.id
+      })
+      
+      return data
+    } catch (error) {
+      console.error('Sign in error:', error)
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Add signUp function
+  const signUp = async (email, password, name) => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      })
+      
+      if (error) throw error
+      
+      console.log('Sign up successful:', {
+        email: data.user?.email,
+        id: data.user?.id
+      })
+      
+      return data
+    } catch (error) {
+      console.error('Sign up error:', error)
+      setError(error.message)
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const signInWithGoogle = async () => {
     try {
       console.log('Initiating Google sign-in')
@@ -171,10 +220,7 @@ export const AuthProvider = ({ children }) => {
         }
       })
       
-      if (error) {
-        console.error('Error initiating Google sign-in:', error)
-        throw error
-      }
+      if (error) throw error
 
       console.log('Google sign-in initiated successfully:', {
         provider: data?.provider,
@@ -184,7 +230,7 @@ export const AuthProvider = ({ children }) => {
       return data
     } catch (error) {
       console.error('Google sign-in error:', error)
-      setError(error.message || 'Failed to sign in with Google')
+      setError(error.message)
       throw error
     }
   }
@@ -215,6 +261,8 @@ export const AuthProvider = ({ children }) => {
       user,
       loading,
       error,
+      signIn,
+      signUp,
       signInWithGoogle,
       signOut,
       clearError
