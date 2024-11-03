@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
 import WaitingState from './components/WaitingState'
 import CharacterCreator from './components/CharacterCreator'
+import LogoutButton from './components/LogoutButton'
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -34,6 +35,8 @@ export default function FairytalePage() {
   const [showCharacterCreator, setShowCharacterCreator] = useState(false);
   const [characterAttributes, setCharacterAttributes] = useState({});
   const [allAttributesSelected, setAllAttributesSelected] = useState(false);
+  const [uploadedImageId, setUploadedImageId] = useState(null);
+  const [storyData, setStoryData] = useState(null);
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -66,18 +69,21 @@ export default function FairytalePage() {
     setSecondImageUrl(null);
 
     try {
+      const storyData = {
+        childName: name,
+        childAge: age,
+        childInterests: theme,
+        bookType,
+        characterAttributes,
+        uploadedImageId
+      };
+
       const response = await fetch('/api/initialize-story', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          childName: name, 
-          childAge: age, 
-          childInterests: theme, 
-          bookType,
-          characterAttributes 
-        }),
+        body: JSON.stringify(storyData),
       });
 
       if (!response.ok) {
@@ -149,7 +155,11 @@ export default function FairytalePage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ imagePrompt: data.imagePrompt, isColoringBook: bookType === 'coloring' }),
+        body: JSON.stringify({
+          imagePrompt: data.imagePrompt,
+          isColoringBook: bookType === 'coloring',
+          uploadedImageId
+        }),
       });
 
       if (!imageResponse.ok) {
@@ -195,6 +205,7 @@ export default function FairytalePage() {
     setSecondAudioUrl(null);
     setShowCharacterCreator(false);
     setCharacterAttributes({});
+    setUploadedImageId(null);
   };
 
   const handleGenerateFirstSpeech = async () => {
@@ -292,11 +303,52 @@ export default function FairytalePage() {
     }
   }, [secondAudioUrl]);
 
+  const handleImageUploaded = (imageId) => {
+    console.log('Image uploaded with ID:', imageId);
+    setUploadedImageId(imageId);
+  };
+
+  const handleGenerateImage = async (imagePrompt, isColoringBook = false) => {
+    setIsGeneratingImage(true);
+    try {
+      const response = await fetch('/api/generate-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imagePrompt,
+          isColoringBook,
+          uploadedImageId: storyData.uploadedImageId
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate image');
+      }
+
+      const data = await response.json();
+      return data.imageUrl;
+    } catch (error) {
+      console.error('Error generating image:', error);
+      setError('Failed to generate image');
+      return null;
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Add the LogoutButton in a fixed position container */}
+      <div className="absolute top-4 right-4">
+        <LogoutButton />
+      </div>
+
       {(isGenerating || isImageGenerating) && <WaitingState />}
+
       <div className="max-w-3xl mx-auto">
-        <Card className="shadow-xl bg-white">
+        <Card className="shadow-xl bg-white rounded-xl"> {/* Added rounded-xl */}
           <CardHeader>
             <CardTitle className="text-3xl font-bold text-center text-purple-800">
               Magical Fairytale Generator
@@ -318,7 +370,7 @@ export default function FairytalePage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         required
-                        className="border-2 border-purple-300 focus:border-purple-500"
+                        className="border-2 border-purple-300 focus:border-purple-500 rounded-xl" // Added rounded-xl
                       />
                     </div>
                     <div className="space-y-2">
@@ -332,7 +384,7 @@ export default function FairytalePage() {
                         required
                         min="1"
                         max="12"
-                        className="border-2 border-purple-300 focus:border-purple-500"
+                        className="border-2 border-purple-300 focus:border-purple-500 rounded-xl" // Added rounded-xl
                       />
                     </div>
                     <div className="space-y-2">
@@ -346,21 +398,21 @@ export default function FairytalePage() {
                               key={item.value}
                               type="button"
                               variant={isSelected ? "default" : "outline"}
-                              className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 ${
+                              className={`h-auto flex flex-col items-center justify-center p-4 transition-all duration-200 rounded-xl border-2 ${  // Added border-2
                                 isSelected
-                                  ? "bg-purple-600 text-white shadow-lg scale-105 border-4 border-yellow-400"
-                                  : "hover:bg-purple-100 hover:scale-102"
+                                  ? "bg-purple-600 text-white shadow-lg scale-105 border-purple-500" // Changed from border-yellow-400 to border-purple-500
+                                  : "hover:bg-purple-100 hover:scale-102 border-purple-300" // Added border-purple-300
                               }`}
                               onClick={() => setTheme(item.value)}
                             >
                               <Icon
-                                className={`h-8 w-8 mb-2 ${isSelected ? "text-yellow-400" : "text-purple-600"}`}
+                                className={`h-8 w-8 mb-2 ${isSelected ? "text-white" : "text-purple-600"}`}
                               />
                               <span className="text-sm font-medium">
                                 {item.label}
                               </span>
                               {isSelected && (
-                                <span className="absolute top-0 right-0 bg-yellow-400 text-purple-600 px-2 py-1 text-xs font-bold rounded-bl-lg">
+                                <span className="absolute top-0 right-0 bg-purple-500 text-white px-2 py-1 text-xs font-bold rounded-bl-lg">
                                   Selected
                                 </span>
                               )}
@@ -379,7 +431,7 @@ export default function FairytalePage() {
                               key={item.value}
                               type="button"
                               variant={isSelected ? "default" : "outline"}
-                              className={`h-auto flex items-center justify-center p-4 transition-all duration-200 ${
+                              className={`h-auto flex items-center justify-center p-4 transition-all duration-200 rounded-xl ${  // Added rounded-xl
                                 isSelected
                                   ? "bg-purple-600 text-white font-bold"
                                   : "bg-white text-purple-600 hover:bg-purple-100"
@@ -397,11 +449,12 @@ export default function FairytalePage() {
                   <CharacterCreator 
                     onAttributesChange={setCharacterAttributes}
                     onAllAttributesSelected={setAllAttributesSelected}
+                    onImageUploaded={handleImageUploaded}
                   />
                 )}
                 <Button
                   type="submit"
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white rounded-xl" // Added rounded-xl
                   disabled={isGenerating || (showCharacterCreator && !allAttributesSelected)}
                 >
                   {isGenerating ? "Generating..." : showCharacterCreator ? "Generate Fairytale" : "Next: Create Character"}

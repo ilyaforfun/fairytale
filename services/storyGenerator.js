@@ -6,8 +6,13 @@ const anthropic = new Anthropic({
 
 let lastPrompt = "";
 let storyContext = "";
+let currentCharacterAttributes = null;
+let currentUploadedImageId = null;
 
-async function initializeStory(childName, childAge, childInterests, bookType, characterAttributes) {
+async function initializeStory(childName, childAge, childInterests, bookType, characterAttributes, uploadedImageId) {
+  currentUploadedImageId = uploadedImageId;
+  currentCharacterAttributes = characterAttributes;
+
   const isColoringBook = bookType === "coloring";
   const coloringBookPrompt = isColoringBook
     ? "The story should be suitable for a coloring book, with clear, distinct scenes that can be easily illustrated as black and white line drawings."
@@ -17,12 +22,14 @@ async function initializeStory(childName, childAge, childInterests, bookType, ch
     .map(([key, value]) => `${key}: ${value}`)
     .join(", ");
 
-  lastPrompt = `Create the beginning of a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The child character in the story should have the following attributes: ${characterDescription}. The story should be no more than 250 words, start to set up a clear moral lesson, and be suitable for children. ${coloringBookPrompt} Include a title for the story. The story should always be about ${childName} and be appropriate for the ${childAge} years old child. At the end, provide two distinct options for what ${childName} could do next. Format these options as:
-  CHOICE A: [First option]
-  CHOICE B: [Second option]
+  lastPrompt = `Create the beginning of a short, age-appropriate fairytale for a ${childAge}-year-old child named ${childName} who likes ${childInterests}. The child character in the story should have the following attributes: ${characterDescription}. The story should be no more than 250 words, start to set up a clear moral lesson, and be suitable for children. ${coloringBookPrompt} Include a title for the story. The story should always be about ${childName} and be appropriate for the ${childAge} years old child.
 
-  After the story and choices, provide a separate, detailed image prompt that captures the essence of this part of the story. The image prompt should describe a scene that a child would enjoy seeing illustrated, including the character's appearance based on the given attributes. The prompt should always include the fact that this is an illustration for the fairytale book. Format this as:
-  IMAGE PROMPT: [Detailed image description]`;
+At the end, provide two distinct options for what ${childName} could do next. Format these options as:
+CHOICE A: [First option]
+CHOICE B: [Second option]
+
+After the story and choices, provide a separate, detailed image prompt that captures the essence of this part of the story. The prompt should describe a scene that a child would enjoy seeing illustrated. Format this as:
+IMAGE PROMPT: [Detailed image description]`;
 
   console.log("Story initialization prompt:", lastPrompt);
 
@@ -47,6 +54,9 @@ async function initializeStory(childName, childAge, childInterests, bookType, ch
     if (!storyContent) {
       throw new Error("Story content is empty");
     }
+
+    // Store the initial story without the choices
+    storyContext = storyContent.split(/CHOICE A:/)[0].trim();
 
     const titleMatch = storyContent.match(/Title:\s*(.*)/);
     const title = titleMatch ? titleMatch[1].trim() : "Untitled Story";
@@ -95,16 +105,22 @@ async function initializeStory(childName, childAge, childInterests, bookType, ch
 }
 
 async function continueStory(choice, childName) {
-  lastPrompt = `Continue the fairytale based on the following context and the child's choice. The continuation should be no more than 250 words, complete the moral lesson, and provide a satisfying conclusion to the story.
+  const characterDescription = currentCharacterAttributes 
+    ? Object.entries(currentCharacterAttributes)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ")
+    : "";
+
+  const lastPrompt = `Continue the fairytale based on the following context and the child's choice. The continuation should be no more than 250 words, complete the moral lesson, and provide a satisfying conclusion to the story.
 
 Story context:
 ${storyContext}
 
 The child chose: ${choice}
 
-Please continue and conclude the story based on this choice.
+Please continue and conclude the story based on this choice. Remember that the main character ${childName} has ${characterDescription}.
 
-After the story conclusion, provide a separate, detailed image prompt that captures the essence of this conclusion. The image prompt should describe a scene that summarizes the story's ending in a visually appealing way for children. Format this as:
+After the story conclusion, provide a separate, detailed image prompt that captures the essence of this conclusion. The image prompt should describe a scene that summarizes the story's ending in a visually appealing way for children, including the character's physical attributes. Format this as:
 IMAGE PROMPT: [Detailed image description]`;
 
   console.log("Story continuation prompt:", lastPrompt);
@@ -167,9 +183,19 @@ function getFullStory() {
   return storyContext;
 }
 
+function getCurrentUploadedImageId() {
+  return currentUploadedImageId;
+}
+
+function getUploadedImageId() {
+  return currentUploadedImageId;
+}
+
 module.exports = {
   initializeStory,
   continueStory,
   getLastPrompt,
   getFullStory,
+  getCurrentUploadedImageId,
+  getUploadedImageId,
 };
