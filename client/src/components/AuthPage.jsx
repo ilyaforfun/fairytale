@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Button } from "../components/ui/button"
+import { Input } from "../components/ui/input"
+import { Label } from "../components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs"
 import { BookOpen, Wand2, Sparkles, Mail, Lock, User, AlertCircle } from 'lucide-react'
-import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Separator } from "../components/ui/separator"
+import { Alert, AlertDescription } from "../components/ui/alert"
 import { useAuth } from '../contexts/AuthContext'
 
 export default function AuthPage() {
