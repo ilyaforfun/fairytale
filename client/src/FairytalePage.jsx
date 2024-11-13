@@ -3,12 +3,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2, Save } from 'lucide-react'
+import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
 import WaitingState from './components/WaitingState'
 import CharacterCreator from './components/CharacterCreator'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
-import { supabase } from './lib/supabase';
+import LogoutButton from './components/LogoutButton'
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -39,9 +37,6 @@ export default function FairytalePage() {
   const [allAttributesSelected, setAllAttributesSelected] = useState(false);
   const [uploadedImageId, setUploadedImageId] = useState(null);
   const [storyData, setStoryData] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState(null);
-  const navigate = useNavigate()
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -343,49 +338,11 @@ export default function FairytalePage() {
     }
   };
 
-  const handleSaveStory = async () => {
-    if (!story) return;
-
-    setIsSaving(true);
-    setSaveError(null);
-
-    try {
-      const storyData = {
-        title: story.title,
-        content: story.content,
-        theme,
-        child_name: name,
-        child_age: parseInt(age),
-        book_type: bookType,
-        image_urls: [imageUrl, secondImageUrl].filter(Boolean),
-        character_attributes: characterAttributes,
-        audio_urls: [firstAudioUrl, secondAudioUrl].filter(Boolean)
-      };
-
-      const { error } = await supabase
-        .from('stories')
-        .insert([storyData]);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error saving story:', error);
-      setSaveError('Failed to save story');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
+      {/* Add the LogoutButton in a fixed position container */}
       <div className="absolute top-4 right-4">
-        <Button
-          variant="outline"
-          onClick={() => navigate('/')}
-          className="bg-white hover:bg-purple-50 text-purple-600 border-2 border-purple-600 flex items-center justify-center rounded-xl shadow-sm transition-all duration-200"
-        >
-          <ArrowLeft className="w-5 h-5 mr-1" />
-          Back
-        </Button>
+        <LogoutButton />
       </div>
 
       {(isGenerating || isImageGenerating) && <WaitingState />}
@@ -580,15 +537,6 @@ export default function FairytalePage() {
                     </Button>
                   </div>
                 )}
-                <Button
-                  onClick={handleSaveStory}
-                  disabled={isSaving}
-                  className="mt-4 bg-green-600 hover:bg-green-700 text-white flex items-center gap-2"
-                >
-                  <Save className="w-4 h-4" />
-                  {isSaving ? 'Saving...' : 'Save Story'}
-                </Button>
-                {saveError && <p className="text-red-500 mt-2">{saveError}</p>}
                 <div className="mt-4 flex justify-between">
                   <Button
                     onClick={togglePrompts}
