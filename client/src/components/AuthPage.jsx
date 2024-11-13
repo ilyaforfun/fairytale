@@ -21,13 +21,13 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
 
-  const handleSignIn = async (e) => {
-    e.preventDefault()
+  const handleSignIn = async (event) => {
+    event.preventDefault()
     setError('')
     setIsLoading(true)
     try {
       await signIn(email, password)
-      navigate('/')
+      // navigation will be handled by the auth state change listener
     } catch (error) {
       setError(error.message)
     } finally {
@@ -35,8 +35,8 @@ export default function AuthPage() {
     }
   }
 
-  const handleSignUp = async (e) => {
-    e.preventDefault()
+  const handleSignUp = async (event) => {
+    event.preventDefault()
     setError('')
 
     if (password !== confirmPassword) {
@@ -47,7 +47,7 @@ export default function AuthPage() {
     setIsLoading(true)
     try {
       await signUp(email, password, name)
-      navigate('/')
+      // navigation will be handled by the auth state change listener
     } catch (error) {
       setError(error.message)
     } finally {

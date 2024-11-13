@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookOpen, Wand2, Palette, Send, Crown, Rocket, Waves, Leaf, Volume2 } from 'lucide-react'
 import WaitingState from './components/WaitingState'
 import CharacterCreator from './components/CharacterCreator'
-import LogoutButton from './components/LogoutButton'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 
 export default function FairytalePage() {
   const [name, setName] = useState("");
@@ -37,6 +38,7 @@ export default function FairytalePage() {
   const [allAttributesSelected, setAllAttributesSelected] = useState(false);
   const [uploadedImageId, setUploadedImageId] = useState(null);
   const [storyData, setStoryData] = useState(null);
+  const navigate = useNavigate()
 
   const themes = [
     { value: "princess", label: "Princess Adventure", icon: Crown },
@@ -340,9 +342,15 @@ export default function FairytalePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-100 to-pink-100 py-12 px-4 sm:px-6 lg:px-8">
-      {/* Add the LogoutButton in a fixed position container */}
       <div className="absolute top-4 right-4">
-        <LogoutButton />
+        <Button
+          variant="outline"
+          onClick={() => navigate('/')}
+          className="bg-white hover:bg-purple-50 text-purple-600 border-2 border-purple-600 flex items-center justify-center rounded-xl shadow-sm transition-all duration-200"
+        >
+          <ArrowLeft className="w-5 h-5 mr-1" />
+          Back
+        </Button>
       </div>
 
       {(isGenerating || isImageGenerating) && <WaitingState />}
